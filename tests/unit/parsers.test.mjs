@@ -48,7 +48,7 @@ Year,Period,Series Id,Value
 Series Id:    LUU0204899600
 Series title: (unadj)- Percent of employed, Members of unions
 
-Series Id,Year,Period,Value
+Series id,Year,Period,Value
 LUU0204899600,2024,A01,9.9
 LUU0204899600,2025,A01,10.0(11)
 </PRE></BODY></HTML>`;
