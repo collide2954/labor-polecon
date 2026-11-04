@@ -5,14 +5,22 @@ import snapshot from '../../src/snapshot.js';
 
 const yrs = (pairs) => ({ years: pairs });
 const ann = (pairs, latest = null) => ({ annual: pairs, latest });
+const weekly = (pairs) => ann(pairs.map(([y, v]) => [y, (v * 1000) / (365.25 / 7)]));
 
 const fixture = {
   generated: '2026-11-04T01:37:31.893Z',
   bls: {
     CEU3000000007: ann([[1939, 37.8], [2025, 41.1]]),
-    PRS85006093: ann([[1947, 20], [2025, 120]]),
+    PRS85006093: ann([[1947, 20], [1964, 40], [2025, 120]]),
     PRS85006153: ann([[1947, 40], [2025, 100]]),
     CUUR0000SA0: ann([[1964, 31], [1968, 34.8], [1972, 41.8], [1980, 82.4], [2025, 321.943]]),
+    CWUR0000SA0: ann([[1964, 31], [1968, 34.8], [1972, 41.8], [1980, 82.4], [2025, 321.943]]),
+    CEU0500000082: weekly([[1972, 90], [2025, 800]]),
+    CEU4142000082: weekly([[1972, 10], [2025, 100]]),
+    CEU4200000082: weekly([[1972, 10], [2025, 100]]),
+    CEU5500000082: weekly([[1972, 10], [2025, 100]]),
+    CEU1021000082: weekly([[2025, 5]]),
+    CEU2000000082: weekly([[2025, 8]]),
     LEU0252911200: ann([[2025, 619]]),
     LEU0252911500: ann([[2025, 2905]]),
     APU0000708111: ann([[1980, 0.844], [2025, 4.252]]),
@@ -35,17 +43,27 @@ const fixture = {
     FAU00X00000080N00: ann([[2024, 5070]]),
   },
   nipa: {
-    A457RC: yrs([[1944, 100], [2025, 1500]]),
-    A460RC: yrs([[1944, 70], [2025, 1000]]),
-    A032RC: yrs([[2025, 1000]]),
-    A033RC: yrs([[2025, 608]]),
-    A051RC: yrs([[2025, 156]]),
+    A457RC: yrs([[1972, 125], [2025, 1500]]),
+    A460RC: yrs([[1972, 100], [2025, 1000]]),
+    A132RC: yrs([[1972, 130], [2025, 1100]]),
+    A443RC: yrs([[1972, 110], [2025, 900]]),
+    B461RC: yrs([[1972, 100], [2025, 800]]),
+    A4103C: yrs([[2025, 1100]]),
+    N4159C: yrs([[2025, 60]]),
+    N4164C: yrs([[2025, 40]]),
+    N4107C: yrs([[2025, 10]]),
+    N4112C: yrs([[2025, 10]]),
+    A032RC: yrs([[2025, 4000]]),
+    A033RC: yrs([[2025, 2432]]),
+    A034RC: yrs([[2025, 2000]]),
+    A051RC: yrs([[2025, 624]]),
     W005RC: yrs([[1929, 100], [2025, 1000]]),
     B075RC: yrs([[1929, 33], [2025, 78]]),
     A445RC: yrs([[2025, 400]]),
     A587RC: yrs([[2025, 100]]),
   },
-  fixed: { k1pnofi2es00: yrs([[1943, 300], [2024, 2000]]) },
+  fixed: { k1pnofi2es00: yrs([[1971, 300], [2024, 3500]]), m1n21001es00: yrs([[2025, 10]]), m1n23001es00: yrs([[2025, 1]]) },
+  z1: { LM105020015: yrs([[1971, 75], [2024, 500]]) },
   industries: {
     years: [2024, 2025],
     rows: [
@@ -75,17 +93,17 @@ const fixture = {
 test('findings state each section as a number', () => {
   const f = findings(fixture);
   assert.equal(f.hours, 'The manufacturing week: 60 hours in 1890, 41.1 in 2025');
-  assert.equal(f.division, 'Of a 41.1-hour manufacturing week in 2025, 27.4 hours match wages and 13.7 match surplus value');
-  assert.equal(f.surplus, 'Nonfinancial corporations, 2025: 50 cents of surplus value for every dollar of wages');
-  assert.equal(f.industries, 'Mining: $3.00 of surplus per dollar of compensation in 2025. Construction: $0.50');
-  assert.equal(f.productivity, 'Since 1947, output per hour has risen 6-fold and real hourly compensation 2.5-fold');
-  assert.equal(f.wages, 'Real hourly earnings of production workers, 2025: $31.35, the highest of any year since 1964');
+  assert.equal(f.division, 'Of a 41.1-hour manufacturing week in 2025, 13.7 hours match wages and 27.4 match surplus value');
+  assert.equal(f.surplus, 'Nonfinancial corporations, 2025: $2.00 of surplus value per dollar of variable capital');
+  assert.equal(f.industries, 'Mining: $5.00 of surplus value per dollar of variable capital in 2025. Construction: $0.75');
+  assert.equal(f.productivity, 'Since 1964, output per hour has risen 3-fold, real hourly earnings of production and nonsupervisory workers 1.2-fold');
+  assert.equal(f.wages, 'Real hourly earnings of production and nonsupervisory workers, in 2025 dollars: $26.27 in 1964, $31.35 in 2025');
   assert.equal(f.minimum, 'In 2025 dollars, the federal minimum wage was highest in 1968: $14.65. It is $7.25');
   assert.equal(f.spread, 'The 90th percentile of weekly earnings is 4.7 times the 10th, 2025');
   assert.equal(f.basket, 'A dozen eggs: 7.4 minutes of work in 1980, 8.1 in 2025');
   assert.equal(f.canal, 'A canal laborer’s day: $0.71 in 1828, $1.25 in 1881');
-  assert.equal(f.composition, '$2.00 of fixed capital for every dollar of yearly wages, 2025');
-  assert.equal(f.profit, 'Rate of profit: 25% in 2025. Highest: 25% in 2025. Lowest: 10% in 1944');
+  assert.equal(f.composition, '$8.00 of constant capital for every dollar of variable capital, 2025');
+  assert.equal(f.profit, 'Rate of profit: 25% in 2025. Highest: 25% in 2025. Lowest: 20% in 1972');
   assert.equal(f.concentration, '3 firms with 10,000 or more employees employ 29.9% of private-sector workers, 2023');
   assert.equal(f.finance, 'Financial corporations: 25% of domestic corporate profits, 2025');
   assert.equal(f.unemployment, 'Unemployment: 24.9% in 1933, 4% in September 2026');
@@ -93,7 +111,7 @@ test('findings state each section as a number', () => {
   assert.equal(f.duration, '23.2% of the unemployed had looked for work for 27 weeks or more, 2025');
   assert.equal(f.class, '93.9% of the employed work for wages or salaries, against 78.6% in 1948');
   assert.equal(f.enslaved, '1860: 2,340,000 of 11,110,000 workers, 21.1%, were enslaved');
-  assert.equal(f.income, 'Compensation: 60.8% of national income, 2025. Corporate profits: 15.6%');
+  assert.equal(f.income, 'Compensation: 60.8% of national income in 2025, of which production and nonsupervisory pay 24.3%. Corporate profits: 15.6%');
   assert.equal(f.households, 'The top fifth of households received 52.4% of income in 2025; the bottom fifth 3%');
   assert.equal(f.wealth, 'The top 1% hold 32% of net worth and 51% of corporate equities and fund shares, 2026:Q2');
   assert.equal(f.taxes, 'Corporate income taxes: 33% of federal receipts in 1929, 7.8% in 2025');
