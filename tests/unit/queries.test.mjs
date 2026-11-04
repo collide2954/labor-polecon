@@ -30,7 +30,7 @@ test('NIPA and fixed asset codes look like BEA codes and name their table line',
   }
   for (const [code, n] of Object.entries(FIXED)) {
     assert.equal(identify(code)?.type, 'BEA fixed asset series', code);
-    assert.match(n.table, /^FAAt\d{3}:\d+$/, code);
+    assert.match(n.table, /^FAAt\d{3}(ESI)?:\d+$/, code);
   }
 });
 
@@ -53,4 +53,20 @@ test('blsBatches groups series by start year in batches no larger than the limit
     assert.ok(b.ids.length <= BLS_BATCHES);
     for (const id of b.ids) assert.ok(BLS_SERIES.find((s) => s.id === id).from >= b.from);
   }
+});
+
+test('productive payrolls and industry maps point at known series', async () => {
+  const { PRODUCTIVE, INDUSTRY_SERIES, Z1 } = await import('../../src/queries.js');
+  const has = (id) => BLS_SERIES.some((s) => s.id === id);
+  for (const id of [PRODUCTIVE.total, ...PRODUCTIVE.less]) assert.ok(has(id), id);
+  for (const [label, m] of Object.entries(INDUSTRY_SERIES)) {
+    assert.ok(has(m.payroll), label);
+    assert.match(m.payroll, /^CEU\d{8}82$/, label);
+    for (const code of m.wages) assert.match(NIPA[code]?.table ?? '', /^T60300D:\d+$/, `${label} ${code}`);
+    for (const code of m.depreciation) assert.match(FIXED[code]?.table ?? '', /^FAAt304ESI:\d+$/, `${label} ${code}`);
+  }
+  for (const code of ['A132RC', 'A443RC', 'A4103C', 'N4159C', 'N4164C']) assert.ok(NIPA[code], code);
+  assert.ok(has('CWUR0000SA0'));
+  assert.equal(Z1.file, 'csv/S11_1_i_a.csv');
+  assert.ok(Z1.codes.includes('LM105020015.A'));
 });
