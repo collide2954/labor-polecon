@@ -521,8 +521,8 @@ const fractionalYear = (date) => {
 export const timeline = ({ mount, events, people, projects, limits, onSelect, onRange }) => {
   let domain = [...limits];
   let selected = null;
-  const lanes = { state: 46, labor: 78, dol: 122, afl: 148, launch: 194 };
-  const H = 228;
+  const lanes = { state: 46, labor: 78, dol: 122, afl: 168, launch: 214 };
+  const H = 248;
   const draw = () => {
     const W = widthOf(mount);
     const L = 8;
@@ -540,7 +540,7 @@ export const timeline = ({ mount, events, people, projects, limits, onSelect, on
       el('text', { class: 'lane-lab', x: L, y: lanes.state - 12 }, 'Law and the state'),
       el('text', { class: 'lane-lab', x: L, y: lanes.labor - 12 }, 'Strikes and organizing'),
       el('text', { class: 'lane-lab', x: L, y: lanes.dol - 10 }, 'Secretaries of Labor'),
-      el('text', { class: 'lane-lab', x: L, y: lanes.afl + 20 }, 'AFL and AFL-CIO presidents'),
+      el('text', { class: 'lane-lab', x: L, y: lanes.afl - 10 }, 'AFL and AFL-CIO presidents'),
       el('text', { class: 'lane-lab', x: L, y: lanes.launch - 12 }, 'Agencies'),
       events.map((e, i) => {
         const v = fractionalYear(e.date);
