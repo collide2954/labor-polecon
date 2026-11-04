@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   accounts, workday, deflate, minWageYear, minutes, classShares, reserveLayers, perThousand, shares,
-  nationalIncome, federalReceipts, peak, series, cpiIn, ratioSeries, productiveShare, industryRate, WEEK,
+  nationalIncome, federalReceipts, peak, series, cpiIn, ratioSeries, productiveShare, industryRate, WEEK, prisonRates, worldShares, percentOf,
 } from '../../src/calc.js';
 
 const close = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
@@ -180,4 +180,22 @@ test('peak and ratioSeries', () => {
   assert.deepEqual(peak([{ y: 1, v: 3 }, { y: 2, v: 9 }, { y: 3, v: 9 }], 'v'), { y: 2, v: 9 });
   assert.deepEqual(peak([{ y: 1, v: 3 }, { y: 2, v: 1 }], 'v', 'min'), { y: 2, v: 1 });
   assert.deepEqual(ratioSeries(new Map([[1, 4], [2, 9]]), new Map([[1, 2], [3, 3]])), [[1, 2]]);
+});
+
+test('prisonRates keeps the published rates and divides later counts by the midyear population', () => {
+  const snap = { prisons: { years: [[1978, 294396], [1979, 301470]] }, nipa: { B230RC: nipa([[1978, 222585], [1979, 225055]]) } };
+  const rows = prisonRates(snap, [[1977, 285456, 129]]);
+  assert.deepEqual(rows.map((r) => r.year), [1977, 1978, 1979]);
+  assert.equal(rows[0].rate, 129);
+  assert.ok(close(rows[1].rate, (294396 / 222585000) * 1e5));
+  assert.equal(rows[2].prisoners, 301470);
+});
+
+test('worldShares divides each economy by the world total, year by year', () => {
+  const snap = { world: { X: { USA: [[1960, 40], [1961, 41]], CHN: [[1960, 5]], WLD: [[1960, 100], [1961, 120]] } } };
+  assert.deepEqual(worldShares(snap, 'X'), { USA: [[1960, 40], [1961, 41 / 120 * 100]], CHN: [[1960, 5]] });
+});
+
+test('percentOf adds parts and divides by a total where both exist', () => {
+  assert.deepEqual(percentOf(SNAP, ['A033RC', 'A041RC'], 'A032RC'), [[2025, 70]]);
 });
