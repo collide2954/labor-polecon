@@ -493,3 +493,14 @@ test('each chart is one tab stop and arrow keys step through its marks', async (
   assert.match(await page.textContent('#tip'), new RegExp(`${last - 1}`));
   await page.close();
 });
+
+test('chart keys never overlap on a phone', async () => {
+  const { page } = await open({ width: 375 });
+  const clashes = await page.$$eval('.chart svg', (svgs) => svgs.flatMap((svg) => {
+    const keys = [...svg.querySelectorAll('text.seg-key')].map((t) => t.getBBox());
+    return keys.flatMap((a, i) => keys.slice(i + 1).filter((c) => a.x < c.x + c.width && c.x < a.x + a.width && a.y < c.y + c.height && c.y < a.y + a.height))
+      .map(() => svg.closest('[id]')?.id);
+  }));
+  assert.deepEqual(clashes, []);
+  await page.close();
+});
