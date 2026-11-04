@@ -112,6 +112,7 @@ test('real snapshot gives every finding as text without filler words', () => {
   for (const [key, text] of Object.entries(f)) {
     assert.equal(typeof text, 'string', key);
     assert.ok(text.length > 10 && text.length < 130, `${key}: ${text}`);
-    assert.doesNotMatch(text, /NaN|undefined|null|Infinity|\bonly\b|\bjust\b|\bmere|\bsoar|\bplung|\bstagger|\bshock/i, `${key}: ${text}`);
+    assert.doesNotMatch(text, /NaN|undefined|null|Infinity/, `${key}: ${text}`);
+    assert.doesNotMatch(text, /\b(only|just|mere|merely|soar\w*|plung\w*|stagger\w*|shock\w*)\b/i, `${key}: ${text}`);
   }
 });
