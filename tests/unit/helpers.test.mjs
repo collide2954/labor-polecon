@@ -41,6 +41,7 @@ test('niceTicks returns round steps up to max', () => {
   assert.deepEqual(niceTicks(0.62, 3), [0, 0.5, 1]);
   assert.deepEqual(niceTicks(0.29, 3), [0, 0.1, 0.2, 0.3]);
   assert.deepEqual(niceTicks(0, 3), [0]);
+  assert.deepEqual(niceTicks(100.00000000000003, 4), [0, 50, 100]);
 });
 
 test('yearOf and longDate read partial dates', () => {
