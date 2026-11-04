@@ -726,7 +726,9 @@ export const countUp = (node, value, format = exact) => {
   io.observe(node);
 };
 
-export const dumbbell = ({ mount, rows, years, describe, aria, format = compact }) => {
+export const dumbbell = ({
+  mount, rows, years, describe, aria, format = compact, tickFormat = compact,
+}) => {
   const W = widthOf(mount);
   const R = 60;
   const T = 22;
@@ -741,7 +743,7 @@ export const dumbbell = ({ mount, rows, years, describe, aria, format = compact 
   const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': aria },
     ticks.map((t) => el('g', {},
       el('line', { class: 'grid', x1: x(t), x2: x(t), y1: T - 6, y2: H }),
-      el('text', { x: x(t), y: 10, 'text-anchor': 'middle' }, compact(t)))),
+      el('text', { x: x(t), y: 10, 'text-anchor': 'middle' }, tickFormat(t)))),
     el('g', { class: lay.cls }, rows.map((r, i) => {
       const mid = T + i * rowH + rowH / 2;
       const y = mid + lay.markY;
