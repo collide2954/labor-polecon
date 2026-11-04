@@ -11,7 +11,7 @@ const decode = (s) => s
   .replace(/&#(\d+);/g, (_, d) => String.fromCharCode(Number(d)))
   .replace(/&amp;/g, '&');
 
-const HEADER = /^(series id,year,period,value|year,period,series id,value)$/i;
+const HEADER = /^(series id,year,period,(value|estimate)|year,period,series id,(value|estimate))$/i;
 
 export const parseBlsText = (html) => {
   const text = decode(html.replace(/<[^>]+>/g, '\n'));
@@ -24,7 +24,7 @@ export const parseBlsText = (html) => {
     const meta = lines.slice(1, head).map((l) => l.match(/^([A-Za-z/ ]+):\s+(.+)$/)).filter(Boolean);
     const title = meta.find((m) => /^Series title$/i.test(m[1]))?.[2]
       ?? meta.filter((m) => /^(Data Element|Rate\/Level)$/.test(m[1])).map((m) => m[2]).join(', ');
-    const cols = lines[head].toLowerCase().split(',');
+    const cols = lines[head].toLowerCase().replace('estimate', 'value').split(',');
     const rows = [];
     for (const line of lines.slice(head + 1)) {
       const cells = line.split(',');
