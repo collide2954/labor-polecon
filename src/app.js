@@ -1,6 +1,6 @@
 import snapshot from './snapshot.js';
 import {
-  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, COAL, HIST,
+  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, COAL, HIST, POP, ORDER,
 } from './facts.js';
 import {
   exact, compact, pct, usd, cents, identify, matches, filterTimeline, sortRows, LENSES, readLens, inLens, lensSearch, yearOf,
@@ -14,6 +14,7 @@ import {
 } from './findings.js';
 import {
   series, accounts, workday, minutes, classShares, reserveLayers, nationalIncome, federalReceipts, perThousand, deflate, peak, WAGE_PRICES,
+  percentOf, prisonRates, worldShares,
 } from './calc.js';
 import {
   columns, dotplot, stackedArea, miniArea, waffle, lines, timeline, observeFigures, countUp, tipLines, dumbbell, splitBars,
@@ -411,17 +412,308 @@ const renderProfit = () => {
       return tipLines(percent(r.y), String(yr), `Surplus value ${usd(r.r.s * 1e6)}`, `Fixed assets and inventories at the end of ${yr - 1}: ${usd(r.r.C * 1e6)}`, `Net operating surplus only: ${percent(nos.find((p) => p.x === yr).y)}`);
     },
   });
+};
+
+const renderFinance = () => {
   const fin = series(snapshot, 'A587RC');
   const dom = series(snapshot, 'A445RC');
+  const rows = [...fin].sort((a, b) => a[0] - b[0]).map(([year, v]) => ({ year, v: (v / dom.get(year)) * 100, d: v, t: dom.get(year) }));
+  const now = rows.at(-1);
+  $('#finance-dek').textContent = `In ${now.year}, financial corporations took ${usd(now.d * 1e6)} of ${usd(now.t * 1e6)} in domestic corporate profits.`;
   columns({
     mount: $('#finance-chart'),
-    rows: [...fin].sort((a, b) => a[0] - b[0]).map(([year, v]) => ({ year, v: (v / dom.get(year)) * 100, d: v })),
+    rows,
     key: (r) => r.year,
     value: (r) => r.v,
-    height: 170,
+    height: 210,
     yFormat: (v) => `${v}%`,
     aria: 'Financial share of domestic corporate profits',
-    describe: (r) => tipLines(percent(r.v), `of domestic corporate profits, ${r.year}`, `${usd(r.d * 1e6)} financial`),
+    describe: (r) => tipLines(percent(r.v), `of domestic corporate profits, ${r.year}`, `${usd(r.d * 1e6)} financial`, `${usd(r.t * 1e6)} in all`),
+  });
+};
+
+const renderExport = () => {
+  const all = series(snapshot, 'A051RC');
+  const dom = series(snapshot, 'A445RC');
+  const rows = pts(all).filter((p) => dom.has(p.x) && p.y > 0).map((p) => ({ x: p.x, y: ((p.y - dom.get(p.x)) / p.y) * 100, abroad: p.y - dom.get(p.x), all: p.y }));
+  const now = rows.at(-1);
+  const [ry, rv] = lastOf(series(snapshot, 'W160RC'));
+  const part = (id) => usd(series(snapshot, id).get(ry) * 1e6);
+  $('#export-dek').textContent = `${now.x}: ${usd(now.abroad * 1e6)} of ${usd(now.all * 1e6)} in corporate profits came from the rest of the world. Income received on U.S. assets abroad in ${ry}: ${usd(rv * 1e6)}, of which ${part('B3375C')} in dividends, ${part('B3475C')} in reinvested earnings and ${part('A2067C')} in interest.`;
+  const hi = peak(rows, 'y');
+  lines({
+    mount: $('#export-chart'),
+    scale: 'linear',
+    yFormat: (v) => `${v}%`,
+    labelW: 90,
+    series: [{ label: 'From abroad', rows, alt: true }],
+    annotations: [{ x: hi.x, text: `${hi.x}: ${percent(hi.y)}` }],
+    aria: 'Corporate profits from the rest of the world, percent of all corporate profits',
+    describe: (yr) => {
+      const r = rows.find((p) => p.x === yr);
+      return tipLines(percent(r.y), `of corporate profits, ${yr}`, `${usd(r.abroad * 1e6)} from the rest of the world`, `${usd(r.all * 1e6)} in all`);
+    },
+  });
+};
+
+const ECON = [['USA', 'United States'], ['CHN', 'China'], ['EUU', 'European Union'], ['JPN', 'Japan'], ['IND', 'India']];
+
+const renderWorld = () => {
+  const gdp = worldShares(snapshot, 'NY.GDP.MKTP.CD');
+  const list = ECON.map(([c, label], i) => ({ label, rows: gdp[c].map(([x, y]) => ({ x, y })), color: i ? CAT[i] : null, alt: i === 0 }));
+  const year = list[0].rows.at(-1).x;
+  $('#world-dek').textContent = `Shares of world GDP in ${year}: ${list.map((s) => `${s.label} ${percent(s.rows.at(-1).y)}`).join(', ')}.`;
+  lines({
+    mount: $('#world-chart'),
+    scale: 'linear',
+    yFormat: (v) => `${v}%`,
+    labelW: 116,
+    height: 320,
+    series: list,
+    aria: 'Shares of world GDP',
+    describe: (yr) => tipLines(String(yr), 'share of world GDP', ...list.map((s) => [s.label, s.rows.find((p) => p.x === yr)]).filter(([, p]) => p).map(([l, p]) => `${l} ${percent(p.y)}`)),
+  });
+  const man = worldShares(snapshot, 'NV.IND.MANF.CD');
+  const has = (c, y) => man[c].some(([x]) => x === y);
+  const years = man.USA.map(([y]) => y).filter((y) => ECON.every(([c]) => has(c, y)));
+  const [y0, y1] = [years[0], years.at(-1)];
+  const at = (c, y) => man[c].find(([x]) => x === y)[1];
+  dumbbell({
+    mount: $('#manuf-chart'),
+    rows: sortRows(ECON.map(([c, label]) => ({ key: c, label, a: at(c, y0), b: at(c, y1) })), 'b', 'desc'),
+    years: [y0, y1],
+    format: percent,
+    tickFormat: (t) => `${t}%`,
+    aria: 'Shares of world manufacturing value added',
+    describe: (r) => tipLines(percent(r.b), `${r.label}, ${y1}`, `${percent(r.a)} in ${y0}`),
+  });
+  $('#manuf-caption').textContent = `Share of world manufacturing value added, current U.S. dollars, ${y0} and ${y1}, the first and last years with figures for all five, log scale. Source: World Bank, NV.IND.MANF.CD.`;
+};
+
+const renderRentier = () => {
+  const prop = percentOf(snapshot, ['A064RC', 'B703RC', 'A048RC'], 'A065RC').map(([x, y]) => ({ x, y }));
+  const pay = percentOf(snapshot, ['A034RC'], 'A065RC').map(([x, y]) => ({ x, y }));
+  const [year, total] = lastOf(series(snapshot, 'A065RC'));
+  const v = (id) => usd(series(snapshot, id).get(year) * 1e6);
+  $('#rentier-dek').textContent = `Personal income in ${year}: ${usd(total * 1e6)}. Interest ${v('A064RC')}, dividends ${v('B703RC')}, rent ${v('A048RC')}; wages and salaries ${v('A034RC')}.`;
+  const at = (list, yr) => list.find((p) => p.x === yr);
+  lines({
+    mount: $('#rentier-chart'),
+    scale: 'linear',
+    yFormat: (t) => `${t}%`,
+    labelW: 150,
+    series: [{ label: 'Wages and salaries', rows: pay, cls: 'mid' }, { label: 'Interest, dividends, rent', rows: prop, alt: true }],
+    aria: 'Property income and wages, percent of personal income',
+    describe: (yr) => tipLines(String(yr), 'percent of personal income', `Interest, dividends and rent ${percent(at(prop, yr).y)}`, `Wages and salaries ${percent(at(pay, yr).y)}`),
+  });
+};
+
+const renderPopulation = () => {
+  const rows = POP.census.rows.map(([year, total, black, enslaved]) => ({
+    year, total: total / 1e6, enslaved: enslaved === null ? null : enslaved / 1e6, raw: { total, black, enslaved },
+  }));
+  columns({
+    mount: $('#census-chart'),
+    rows,
+    key: (r) => r.year,
+    value: (r) => r.total,
+    overlay: (r) => r.enslaved,
+    yFormat: (t) => `${t}M`,
+    aria: 'Population at each census, millions',
+    describe: (r) => tipLines(exact(r.raw.total), `counted in ${r.year}`,
+      ...(r.raw.black === null ? [] : [`${exact(r.raw.black)} Black`]), ...(r.raw.enslaved === null ? [] : [`${exact(r.raw.enslaved)} enslaved`])),
+  });
+  const { year, ages, total } = snapshot.ages;
+  const sum = (a, b) => ages.filter(([x]) => x >= a && x <= b).reduce((n, [, v]) => n + v, 0);
+  const slave = POP.census.rows.filter((r) => r[3] !== null).at(-1);
+  $('#population-dek').textContent = `${slave[0]}: ${exact(slave[3])} people enslaved, ${pct(slave[3] / slave[1])} of the population. In ${year}: ${exact(total)} residents. Ages 16 to 64: ${exact(sum(16, 64))}, ${pct(sum(16, 64) / total)}. Under 16: ${pct(sum(0, 15) / total)}. 65 and older: ${pct(sum(65, 120) / total)}.`;
+  columns({
+    mount: $('#age-chart'),
+    rows: ages.map(([age, n]) => ({ age, n: n / 1e6 })),
+    key: (r) => r.age,
+    attr: 'age',
+    value: (r) => r.n,
+    height: 200,
+    yFormat: (t) => `${t}M`,
+    highlight: (r) => r.age >= 16 && r.age <= 64,
+    aria: 'Population by single year of age, millions',
+    describe: (r) => tipLines(exact(r.n * 1e6), `age ${r.age === 100 ? '100 and older' : r.age}, ${year}`),
+  });
+  $('#age-caption').textContent = `Resident population by single year of age, July 1, ${year}, millions; ages 16 to 64 in red. The last bar is 100 and older. Source: Census population estimates.`;
+};
+
+const renderNativity = () => {
+  const census = POP.nativity.rows.map(([x, t, f]) => ({ x, y: (f / t) * 100, n: f }));
+  const fb = series(snapshot, 'LNU01073395');
+  const nb = series(snapshot, 'LNU01073413');
+  const lf = pts(fb).filter((p) => nb.has(p.x)).map((p) => ({ x: p.x, y: (p.y / (p.y + nb.get(p.x))) * 100, n: p.y * 1000 }));
+  $('#nativity-dek').textContent = `${lf.at(-1).x}: ${exact(lf.at(-1).n)} foreign-born people in the civilian labor force. ${census.at(-1).x} census: ${exact(census.at(-1).n)} foreign-born residents.`;
+  const at = (list, yr) => list.find((p) => p.x === yr);
+  lines({
+    mount: $('#nativity-chart'),
+    scale: 'linear',
+    yFormat: (t) => `${t}%`,
+    labelW: 100,
+    series: [{ label: 'Population', rows: census, alt: true }, { label: 'Labor force', rows: lf }],
+    aria: 'Foreign born, percent of the population and of the labor force',
+    describe: (yr) => {
+      const c = at(census, yr);
+      const l = at(lf, yr);
+      return tipLines(String(yr), ...(c ? [`${percent(c.y)} of the population`, `${exact(c.n)} foreign born`] : []), ...(l ? [`${percent(l.y)} of the civilian labor force`, `${exact(l.n)} foreign born`] : []));
+    },
+  });
+};
+
+const POVERTY = [
+  ['All Races', 'All people', null], ['Black', '', 1], ['Black Alone', 'Black', 1],
+  ['White, Not Hispanic', '', 3], ['White Alone, Not Hispanic', 'White, not Hispanic', 3], ['Hispanic (any race)', 'Hispanic', 2],
+];
+
+const renderPoverty = () => {
+  const list = POVERTY.filter(([k]) => snapshot.poverty[k]).map(([k, label, c]) => ({
+    key: k, label, rows: snapshot.poverty[k].map(([x, y]) => ({ x, y })), alt: c === null, color: c === null ? null : CAT[c], cls: label ? null : 'faint',
+  }));
+  const now = Object.fromEntries(list.map((s) => [s.key, s.rows.at(-1)]));
+  $('#poverty-dek').textContent = `${now['All Races'].x}: ${percent(now['All Races'].y)} of all people were below the poverty line. ${now['Black Alone'].x === now['All Races'].x ? `Black people, ${percent(now['Black Alone'].y)}; Hispanic people, ${percent(now['Hispanic (any race)'].y)}; non-Hispanic white people, ${percent(now['White Alone, Not Hispanic'].y)}.` : ''}`;
+  const name = (s) => s.label || POVERTY.find(([k]) => k === s.key)[0];
+  lines({
+    mount: $('#poverty-chart'),
+    scale: 'linear',
+    yFormat: (t) => `${t}%`,
+    labelW: 130,
+    height: 320,
+    series: list,
+    aria: 'Poverty rates by race and Hispanic origin',
+    describe: (yr) => tipLines(String(yr), 'percent below the poverty line', ...list.map((s) => [name(s), s.rows.find((p) => p.x === yr)]).filter(([, p]) => p).map(([l, p]) => `${l} ${percent(p.y)}`)),
+  });
+  const { columns: cols, years } = snapshot.homes;
+  const labels = ['All households', 'White, not Hispanic', 'Black', 'Hispanic'];
+  const homes = cols.map((_, k) => ({ label: labels[k], rows: years.map((r) => ({ x: r[0], y: r[k + 1] })), alt: k === 0, color: k ? CAT[[0, 3, 1, 2][k]] : null }));
+  lines({
+    mount: $('#homes-chart'),
+    scale: 'linear',
+    yFormat: (t) => `${t}%`,
+    labelW: 130,
+    series: homes,
+    aria: 'Homeownership rates by race and ethnicity',
+    describe: (yr) => tipLines(String(yr), 'percent of households owning their home', ...homes.map((s) => `${s.label} ${percent(s.rows.find((p) => p.x === yr).y)}`)),
+  });
+};
+
+const REGIONS = ['Northeast', 'Midwest', 'South', 'West'];
+
+const renderRegions = () => {
+  const rows = POP.regions.rows;
+  const list = REGIONS.map((label, k) => ({ label, rows: rows.map((r) => ({ x: r[0], y: (r[k + 1] / r[5]) * 100, n: r[k + 1] })), alt: label === 'South', color: label === 'South' ? null : CAT[k + 1] }));
+  const last = rows.at(-1);
+  $('#regions-dek').textContent = `${last[0]} census: ${REGIONS.map((label, k) => `${label} ${exact(last[k + 1])}`).join(', ')}.`;
+  lines({
+    mount: $('#regions-chart'),
+    scale: 'linear',
+    yFormat: (t) => `${t}%`,
+    labelW: 100,
+    series: list,
+    aria: 'Shares of the population by region',
+    describe: (yr) => tipLines(String(yr), 'share of the population', ...list.map((s) => {
+      const p = s.rows.find((q) => q.x === yr);
+      return `${s.label} ${percent(p.y)}, ${exact(p.n)}`;
+    })),
+  });
+  columns({
+    mount: $('#hh-chart'),
+    rows: POP.households.rows.map(([year, n]) => ({ year, n })),
+    key: (r) => r.year,
+    value: (r) => r.n,
+    height: 170,
+    yFormat: (t) => String(t),
+    aria: 'Average number of people per household',
+    describe: (r) => tipLines(String(r.n), `people per household, ${r.year}`),
+  });
+};
+
+const FUNCTIONS = [['G16008', 'Public order and safety'], ['G16007', 'National defense'], ['G16034', 'Income security'], ['G16027', 'Health'], ['G16029', 'Education']];
+
+const renderForce = () => {
+  const list = FUNCTIONS.map(([id, label], i) => ({ label, rows: percentOf(snapshot, [id], 'A191RC').map(([x, y]) => ({ x, y })), alt: i === 0, color: i ? CAT[i] : null }));
+  const [year] = lastOf(series(snapshot, 'G16008'));
+  const v = (id) => usd(series(snapshot, id).get(year) * 1e6);
+  $('#force-dek').textContent = `In ${year}: police ${v('G16009')}, law courts ${v('G16011')}, prisons ${v('G16012')}; national defense ${v('G16007')}; income security ${v('G16034')}.`;
+  const at = (s, yr) => s.rows.find((p) => p.x === yr);
+  lines({
+    mount: $('#force-chart'),
+    scale: 'linear',
+    yFormat: (t) => `${t}%`,
+    labelW: 150,
+    height: 320,
+    series: list,
+    aria: 'Government expenditures by function, percent of GDP',
+    describe: (yr) => tipLines(String(yr), 'percent of GDP', ...list.map((s) => `${s.label} ${percent(at(s, yr).y)}`)),
+  });
+  const parts = [['G16009', 'Police'], ['G16011', 'Law courts'], ['G16012', 'Prisons']].map(([id, label], i) => ({
+    label, rows: percentOf(snapshot, [id], 'A191RC').map(([x, y]) => ({ x, y })), alt: i === 0, color: i ? CAT[i] : null,
+  }));
+  lines({
+    mount: $('#police-chart'),
+    scale: 'linear',
+    yFormat: (t) => `${t}%`,
+    labelW: 90,
+    height: 220,
+    series: parts,
+    aria: 'Police, courts and prisons, percent of GDP',
+    describe: (yr) => tipLines(String(yr), 'percent of GDP', ...parts.map((s) => `${s.label} ${Number(at(s, yr).y.toFixed(2))}%`)),
+  });
+};
+
+const renderPrisons = () => {
+  const rows = prisonRates(snapshot, ORDER.prisonsEarly.rows);
+  const top = peak(rows, 'rate');
+  const split = rows.find((r) => r.year > ORDER.prisonsEarly.rows.at(-1)[0])?.year;
+  $('#prisons-dek').textContent = `${rows.at(-1).year}: ${exact(rows.at(-1).prisoners)} sentenced prisoners. ${top.year}: ${exact(top.prisoners)}. ${rows[0].year}: ${exact(rows[0].prisoners)}.`;
+  columns({
+    mount: $('#prison-chart'),
+    rows,
+    key: (r) => r.year,
+    value: (r) => r.rate,
+    highlight: (r) => r === top,
+    annotations: [{ key: top.year, text: `${top.year}: ${Math.round(top.rate)}` }],
+    yFormat: (t) => String(t),
+    aria: 'Sentenced prisoners per 100,000 residents',
+    describe: (r) => tipLines(`${Math.round(r.rate)} per 100,000`, String(r.year), `${exact(r.prisoners)} sentenced prisoners`),
+  });
+  $('#prison-caption').textContent = `Sentenced prisoners in state and federal institutions per 100,000 residents. To ${split - 1}: rates published by BJS. From ${split}: prisoners under state and federal jurisdiction with sentences of more than a year, divided by the BEA midyear population. Sources: BJS, Prisoners 1925-81; BJS National Prisoner Statistics; BEA NIPA Table 2.1, line 40.`;
+};
+
+const renderRemovals = () => {
+  const rows = ORDER.removals.rows.map(([year, removed, returned]) => ({ year, removed, returned }));
+  const top = peak(rows, 'removed');
+  const now = rows.at(-1);
+  $('#removals-dek').textContent = `${now.year}: ${exact(now.removed)} removals and ${exact(now.returned)} returns. Most removals in one year: ${exact(top.removed)}, in ${top.year}.`;
+  columns({
+    mount: $('#removals-chart'),
+    rows,
+    key: (r) => r.year,
+    value: (r) => r.removed,
+    highlight: (r) => r === top,
+    annotations: [{ key: top.year, text: `${top.year}: ${exact(top.removed)}` }],
+    aria: 'Noncitizens removed by fiscal year',
+    describe: (r) => tipLines(exact(r.removed), `removed, fiscal ${r.year}`, ...(r.returned === null ? [] : [`${exact(r.returned)} returned`])),
+  });
+};
+
+const renderDeployments = () => {
+  const rows = ORDER.deployments.rows.map(([decade, n]) => ({ decade, n }));
+  const total = rows.reduce((s, r) => s + r.n, 0);
+  $('#deployments-dek').textContent = `${exact(total)} entries from 1798 to April 2023. ${rows.filter((r) => r.decade >= 1990).reduce((s, r) => s + r.n, 0)} of them began in 1990 or later.`;
+  columns({
+    mount: $('#deploy-chart'),
+    rows,
+    key: (r) => r.decade,
+    attr: 'decade',
+    label: (r) => `${r.decade}s`,
+    value: (r) => r.n,
+    height: 200,
+    aria: 'Uses of U.S. armed forces abroad by decade',
+    describe: (r) => tipLines(String(r.n), `instances begun in the ${r.decade}s`),
   });
 };
 
@@ -1074,9 +1366,17 @@ const drawCharts = () => {
   renderComposition();
   renderProfit();
   renderConcentration();
+  renderFinance();
+  renderExport();
+  renderWorld();
+  renderRentier();
   renderUnemployment();
   renderLayers();
   renderClass();
+  renderPopulation();
+  renderNativity();
+  renderPoverty();
+  renderRegions();
   renderIncome();
   renderHouseholds();
   renderWealth();
@@ -1085,6 +1385,10 @@ const drawCharts = () => {
   renderStrikes();
   renderInjury();
   renderLobbying();
+  renderForce();
+  renderPrisons();
+  renderRemovals();
+  renderDeployments();
   tl?.redraw();
   applySearch();
 };
