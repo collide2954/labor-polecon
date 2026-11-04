@@ -158,6 +158,22 @@ export const NIPA = {
   W007RC: n('T30200:4', 'Taxes on production and imports'),
   B075RC: n('T30200:8', 'Taxes on income payable by corporations'),
   W780RC: n('T30200:10', 'Contributions for social insurance'),
+  A191RC: n('T10105:1', 'Gross domestic product'),
+  W022RC: n('T31600:1', 'Government expenditures, all functions'),
+  G16007: n('T31600:7', 'Government expenditures, national defense'),
+  G16008: n('T31600:8', 'Government expenditures, public order and safety'),
+  G16009: n('T31600:9', 'Government expenditures, police'),
+  G16011: n('T31600:11', 'Government expenditures, law courts'),
+  G16012: n('T31600:12', 'Government expenditures, prisons'),
+  G16027: n('T31600:28', 'Government expenditures, health'),
+  G16029: n('T31600:30', 'Government expenditures, education'),
+  G16034: n('T31600:36', 'Government expenditures, income security'),
+  W160RC: n('T40100:9', 'Income receipts on assets from the rest of the world'),
+  A2067C: n('T40100:10', 'Interest received from the rest of the world'),
+  B3375C: n('T40100:11', 'Dividends received from the rest of the world'),
+  B3475C: n('T40100:12', 'Reinvested earnings on U.S. direct investment abroad'),
+  W161RC: n('T40100:25', 'Income payments on assets to the rest of the world'),
+  A065RC: n('T20100:1', 'Personal income'),
   A445RC: n('T61600D:2', 'Corporate profits, domestic industries'),
   A587RC: n('T61600D:3', 'Corporate profits, financial'),
 };
@@ -186,6 +202,22 @@ export const Z1 = {
   url: 'https://www.federalreserve.gov/releases/z1/current/z1_csv_files.zip',
   file: 'csv/S11_1_i_a.csv',
   codes: ['LM105020015.A'],
+};
+
+export const WORLD = {
+  url: (indicator, countries) => `https://api.worldbank.org/v2/country/${countries.join(';')}/indicator/${indicator}?format=json&per_page=2000&date=1960:2030`,
+  indicators: [
+    { id: 'NY.GDP.MKTP.CD', label: 'GDP, current US dollars' },
+    { id: 'NV.IND.MANF.CD', label: 'Manufacturing value added, current US dollars' },
+  ],
+  countries: [
+    { id: 'USA', label: 'United States' },
+    { id: 'CHN', label: 'China' },
+    { id: 'EUU', label: 'European Union' },
+    { id: 'JPN', label: 'Japan' },
+    { id: 'IND', label: 'India' },
+    { id: 'WLD', label: 'World' },
+  ],
 };
 
 export const PRODUCTIVE = { total: 'CEU0500000082', less: ['CEU4142000082', 'CEU4200000082', 'CEU5500000082'] };
