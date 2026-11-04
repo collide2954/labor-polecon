@@ -433,7 +433,8 @@ export const waffle = ({ mount, parts, aria, format = exact }) => {
       height: side - gap,
       'data-k': k,
       style: `--i:${n}`,
-    })));
+    })),
+    parts.map((p, i) => el('rect', { class: `cell k${i}`, width: 0, height: 0 })));
   hover(svg, (k) => {
     const p = parts[Number(k)];
     return tipLines(`${((p.value / total) * 100).toFixed(1)}%`, p.label, format(p.value));
