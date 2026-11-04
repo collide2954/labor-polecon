@@ -390,5 +390,13 @@ export const records = (snap) => {
   const corp = federalReceipts(snap).map((r) => ({ y: r.year, v: r.parts.find((p) => p.key === 'corporate').share }));
   const cHi = peak(corp, 'v');
   add(`Largest share of federal receipts from corporate income taxes: ${pct(cHi.v)}, in ${cHi.y}.`, 'beaFlat');
+  const jail = prisonRates(snap, ORDER.prisonsEarly.rows);
+  const jHi = peak(jail, 'rate');
+  add(`Highest rate of sentenced prisoners since ${jail[0].year}: ${Math.round(jHi.rate)} per 100,000 residents, in ${jHi.year}.`, 'bjsCsat');
+  const rem = ORDER.removals.rows.reduce((a, b) => (b[1] > a[1] ? b : a));
+  add(`Most noncitizens removed in one fiscal year since 1892: ${exact(rem[1])}, in ${rem[0]}.`, 'dhsRemovals');
+  const abroad = percentOf(snap, ['G16008'], 'A191RC').map(([y, v]) => ({ y, v }));
+  const aHi = peak(abroad, 'v');
+  add(`Largest share of GDP spent on public order and safety since ${abroad[0].y}: ${Number(aHi.v.toFixed(2))}%, in ${aHi.y}.`, 'beaFlat');
   return out;
 };
