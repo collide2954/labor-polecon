@@ -789,8 +789,8 @@ export const ORDER = {
     ],
   },
   rtwShare: {
-    title: 'Population living in right-to-work states at each census',
-    series: 'Computed from Census population counts by state and the right-to-work table',
+    title: 'Population at each census in states with a right-to-work law then in force',
+    series: 'Computed from Census population counts by state and the right-to-work table, which leaves out laws repealed before 2012',
     columns: ['Year', 'States', 'Population in those states', 'United States'],
     src: 'censusRegions',
     rows: [

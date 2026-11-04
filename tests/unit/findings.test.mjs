@@ -130,7 +130,7 @@ test('findings state each section as a number', () => {
   assert.equal(f.households, 'The top fifth of households received 52.4% of income in 2025; the bottom fifth 3%');
   assert.equal(f.wealth, 'The top 1% hold 32% of net worth and 51% of corporate equities and fund shares, 2026:Q2');
   assert.equal(f.taxes, 'Corporate income taxes: 33% of federal receipts in 1929, 7.8% in 2025');
-  assert.equal(f.rtw, 'Right-to-work states: 12 in 1947, 27 in 2017, 26 from 2024; 50.3% of the population lived in them at the 2020 census');
+  assert.equal(f.rtw, 'Right-to-work laws in force in 26 states, 12 enacted by 1947; 50.3% of the population lived in such states at the 2020 census');
   assert.equal(f.unions, 'Union members: 10% of wage and salary workers in 2025, against 35.5% of nonfarm employment in 1945');
   assert.equal(f.strikes, '30 major work stoppages in 2025; 470 in 1952');
   assert.equal(f.issues, '1881 to 1905: 53.8% of stoppages were over wages and hours');

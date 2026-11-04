@@ -265,12 +265,9 @@ export const rtwYears = () => {
 };
 
 const rtw = () => {
-  const years = rtwYears();
-  const at = (y) => years.find((r) => r.year === y).n;
-  const top = peak(years, 'n');
-  const now = years.at(-1);
+  const now = ORDER.rightToWork.rows.filter((r) => r[2] === null);
   const [census, , people, all] = ORDER.rtwShare.rows.at(-1);
-  return `Right-to-work states: ${at(1947)} in 1947, ${top.n} in ${top.year}, ${now.n} from ${now.year}; ${share(people / all)} of the population lived in them at the ${census} census`;
+  return `Right-to-work laws in force in ${now.length} states, ${now.filter((r) => r[0] <= 1947).length} enacted by 1947; ${share(people / all)} of the population lived in such states at the ${census} census`;
 };
 
 const population = () => {
