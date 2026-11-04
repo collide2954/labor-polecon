@@ -38,7 +38,7 @@ test('identify names the survey for other BLS prefixes', () => {
   assert.equal(identify('WSU100').db, 'Work Stoppages');
   assert.equal(identify('JTU000000000000000JOL').db, 'Job Openings and Labor Turnover Survey');
   assert.equal(identify('PRS85006093').db, 'Productivity and Costs');
-  assert.equal(identify('XXU123456').type === 'BLS series', false);
+  assert.equal(identify('XXU123456'), null);
   assert.ok(Object.keys(BLS_SURVEYS).length >= 15);
 });
 
