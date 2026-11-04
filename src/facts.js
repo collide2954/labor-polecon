@@ -552,3 +552,22 @@ export const SOURCE_TITLES = {
   uaw2023: ['Strikes and organizing', '2023 United Auto Workers strike (Wikipedia)'],
   port2024: ['Strikes and organizing', '2024 United States port strike (Wikipedia)'],
 };
+
+export const INDUSTRY_LABELS = {
+  'Agriculture, forestry, fishing, and hunting': 'Agriculture and forestry',
+  Mining: 'Mining',
+  Utilities: 'Utilities',
+  Construction: 'Construction',
+  Manufacturing: 'Manufacturing',
+  'Wholesale trade': 'Wholesale trade',
+  'Retail trade': 'Retail trade',
+  'Transportation and warehousing': 'Transportation',
+  Information: 'Information',
+  'Finance, insurance, real estate, rental, and leasing': 'Finance and real estate',
+  'Professional and business services': 'Professional and business',
+  'Educational services, health care, and social assistance': 'Education and health care',
+  'Arts, entertainment, recreation, accommodation, and food services': 'Leisure and food service',
+  'Other services, except government': 'Other services',
+  Federal: 'Federal government',
+  'State and local': 'State and local government',
+};
