@@ -270,6 +270,69 @@ export const parseWorldBank = (json) => {
   return out;
 };
 
+const yearOfCell = (v) => {
+  const m = String(v ?? '').trim().match(/^(\d{4})\b/);
+  return m ? Number(m[1]) : null;
+};
+
+const isLabel = (r) => typeof r[0] === 'string' && yearOfCell(r[0]) === null && r.slice(1).every((c) => c === null || c === undefined || c === '');
+
+export const parsePovertyByRace = (rows, blocks) => {
+  const out = {};
+  let current = null;
+  for (const r of rows) {
+    if (!r.length) continue;
+    if (isLabel(r)) {
+      current = r[0].trim();
+      continue;
+    }
+    const year = yearOfCell(r[0]);
+    if (year === null || !blocks.includes(current)) continue;
+    const pct = num(r[3]);
+    if (pct === null) continue;
+    const list = (out[current] ??= []);
+    if (!list.some(([y]) => y === year)) list.push([year, pct]);
+  }
+  for (const list of Object.values(out)) list.sort((a, b) => a[0] - b[0]);
+  return out;
+};
+
+const HOME_COLUMNS = ['U.S.', 'Non-Hispanic White Alone', 'Black Alone', 'Hispanic (of any race)'];
+
+export const parseHomeownership = (rows) => {
+  const head = rows.find((r) => /^Year and/.test(String(r[0] ?? '')));
+  const index = HOME_COLUMNS.map((c) => head.findIndex((h) => typeof h === 'string' && h.trim() === c));
+  const quarters = new Map();
+  let year = null;
+  for (const r of rows) {
+    const y = typeof r[0] === 'number' ? r[0] : null;
+    if (y && r.slice(1).every((c) => c === null || c === undefined)) {
+      year = y;
+      continue;
+    }
+    if (year && /^[1-4](st|nd|rd|th)/.test(String(r[0] ?? '').trim())) {
+      (quarters.get(year) ?? quarters.set(year, []).get(year)).push(index.map((k) => num(r[k])));
+    }
+  }
+  const years = [...quarters].filter(([, q]) => q.length === 4 && q.every((v) => v.every((x) => x !== null)))
+    .map(([y, q]) => [y, ...index.map((_, k) => q.reduce((n, v) => n + v[k], 0) / 4)])
+    .sort((a, b) => a[0] - b[0]);
+  return { columns: HOME_COLUMNS, years };
+};
+
+export const parseAgeSex = (text) => {
+  const [head, ...lines] = text.trim().split(/\r?\n/).map(splitCsv);
+  const cols = head.map((h, i) => [h.match(/^POPESTIMATE(\d{4})$/)?.[1], i]).filter(([y]) => y);
+  const [year, k] = cols.reduce((a, b) => (Number(b[0]) > Number(a[0]) ? b : a));
+  const both = lines.filter((r) => r[0] === '0');
+  const value = (r) => Number(r[k]);
+  return {
+    year: Number(year),
+    ages: both.filter((r) => r[1] !== '999').map((r) => [Number(r[1]), value(r)]),
+    total: value(both.find((r) => r[1] === '999')),
+  };
+};
+
 export const lobbyingDollars = (filings) => {
   const byPeriod = new Map();
   for (const f of filings) {
