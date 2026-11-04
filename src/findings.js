@@ -1,10 +1,12 @@
-import { exact, pct, usd, wordy, cents } from './lib.js';
+import {
+  exact, pct, usd, wordy, cents, placeName,
+} from './lib.js';
 import {
   series, accounts, workday, minWageYear, minutes, industryRate, classShares, reserveLayers, nationalIncome, federalReceipts, peak, deflate,
-  perThousand, WAGE_PRICES, percentOf, prisonRates, worldShares,
+  perThousand, WAGE_PRICES, percentOf, prisonRates, worldShares, lawsInForce, perResidents,
 } from './calc.js';
 import {
-  HIST, COAL, MIN_WAGE, TIMELINE, INDUSTRY_LABELS, SOURCES, POP, ORDER,
+  HIST, COAL, MIN_WAGE, TIMELINE, INDUSTRY_LABELS, SOURCES, POP, ORDER, ABROAD,
 } from './facts.js';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -220,6 +222,25 @@ const exportOfCapital = (snap) => {
   return `Corporate profits from the rest of the world: ${share(v0)} of all corporate profits in ${y0}, ${share(v1)} in ${y1}`;
 };
 
+export const armsTotals = () => {
+  const { columns, rows } = ABROAD.arms;
+  return columns.slice(1, -1).map((label, i) => ({ label, value: rows.reduce((n, r) => n + r[i + 1], 0) }));
+};
+
+const affiliates = () => {
+  const [year, workers, part] = ABROAD.affiliates.rows.at(-1);
+  return `Majority-owned foreign affiliates of U.S. multinationals: ${fold(workers)} million workers in ${year}, ${part}% of worldwide employment`;
+};
+
+export const CLAIMS = [['FL264194005'], ['FL264090005'], ['LM263192101', 'FL263192305']];
+
+const claims = (snap) => {
+  const [ours, theirs] = CLAIMS.map((ids) => percentOf(snap, ids, 'A191RC'));
+  const [y0, a0] = ours[0];
+  const [y1, a1] = ours.at(-1);
+  return `U.S. claims on the rest of the world: ${share(a0 / 100)} of GDP in ${y0}, ${share(a1 / 100)} in ${y1}. Foreign claims on the U.S.: ${share(theirs[0][1] / 100)} to ${share(theirs.at(-1)[1] / 100)}`;
+};
+
 const COUNTRY = { USA: 'U.S.', CHN: 'China', EUU: 'European Union', JPN: 'Japan', IND: 'India' };
 
 const world = (snap) => {
@@ -234,6 +255,22 @@ const rentier = (snap) => {
   const [year, v] = percentOf(snap, ['A064RC', 'B703RC', 'A048RC'], 'A065RC').at(-1);
   const pay = series(snap, 'A034RC').get(year) / series(snap, 'A065RC').get(year);
   return `Interest, dividends and rent: ${share(v / 100)} of personal income in ${year}; wages and salaries: ${share(pay)}`;
+};
+
+export const rtwYears = () => {
+  const rows = ORDER.rightToWork.rows;
+  const ends = rows.map((r) => r[2]).filter((y) => y !== null);
+  const to = Math.max(...rows.map((r) => r[0]), ...ends);
+  return Array.from({ length: to - rows[0][0] + 1 }, (_, i) => rows[0][0] + i).map((year) => ({ year, n: lawsInForce(rows, year) }));
+};
+
+const rtw = () => {
+  const years = rtwYears();
+  const at = (y) => years.find((r) => r.year === y).n;
+  const top = peak(years, 'n');
+  const now = years.at(-1);
+  const [census, , people, all] = ORDER.rtwShare.rows.at(-1);
+  return `Right-to-work states: ${at(1947)} in 1947, ${top.n} in ${top.year}, ${now.n} from ${now.year}; ${share(people / all)} of the population lived in them at the ${census} census`;
 };
 
 const population = () => {
@@ -267,6 +304,12 @@ const force = (snap) => {
   return `Public order and safety: ${share(v0 / 100)} of GDP in ${y0}, ${share(v1 / 100)} in ${y1}`;
 };
 
+const police = (snap) => {
+  const rows = perResidents(snap, ORDER.police.rows);
+  const [a, b] = [rows[0], rows.at(-1)];
+  return `Local police officers per 10,000 residents: ${one(a.rates[0])} in ${a.year}, ${one(b.rates[0])} in ${b.year}. Corrections employees: ${one(a.rates[1])} to ${one(b.rates[1])}`;
+};
+
 const prisons = (snap) => {
   const rows = prisonRates(snap, ORDER.prisonsEarly.rows);
   const top = peak(rows, 'rate');
@@ -282,10 +325,33 @@ const removals = () => {
   return `Noncitizens removed: ${r(rows[0])}, ${r(top)}, ${r(rows.at(-1))}`;
 };
 
+export const fiscalThrough = (months) => MONTHS[(months + 8) % 12];
+
+const detention = () => {
+  const rows = ORDER.detention.rows;
+  const lo = rows.reduce((a, b) => (b[1] < a[1] ? b : a));
+  const [year, adp, months] = rows.at(-1);
+  const through = months < 12 ? ` through ${fiscalThrough(months)}` : '';
+  return `Average daily population in ICE detention: ${exact(rows[0][1])} in fiscal ${rows[0][0]}, ${exact(lo[1])} in ${lo[0]}, ${exact(adp)} in ${year}${through}`;
+};
+
 const deployments = () => {
   const rows = ORDER.deployments.rows;
   const top = rows.reduce((a, b) => (b[1] > a[1] ? b : a));
   return `Uses of U.S. armed forces abroad in the CRS list: ${rows[0][1]} in the ${rows[0][0]}s, ${top[1]} in the ${top[0]}s`;
+};
+
+const stationed = (snap) => {
+  const t = snap.troops;
+  return `Active-duty military personnel overseas, ${t.report}: ${exact(t.overseas)}. ${t.countries.slice(0, 3).map(([c, n]) => `${placeName(c)} ${exact(n)}`).join(', ')}`;
+};
+
+const arms = () => {
+  const totals = armsTotals();
+  const all = ABROAD.arms.rows.reduce((n, r) => n + r.at(-1), 0);
+  const [us, ru] = totals;
+  const years = ABROAD.arms.rows.map((r) => r[0]);
+  return `Arms transfer agreements, ${years[0]} to ${years.at(-1)}: ${us.label} ${usd(us.value * 1e6)}, ${share(us.value / all)} of the world total; ${ru.label} ${usd(ru.value * 1e6)}`;
 };
 
 const history = () => `${TIMELINE.length} events, ${TIMELINE[0].date.slice(0, 4)} to ${TIMELINE.at(-1).date.slice(0, 4)}`;
@@ -306,6 +372,8 @@ export const findings = (snap) => ({
   concentration: concentration(snap),
   finance: finance(snap),
   export: exportOfCapital(snap),
+  affiliates: affiliates(),
+  claims: claims(snap),
   world: world(snap),
   rentier: rentier(snap),
   unemployment: unemployment(snap),
@@ -322,15 +390,20 @@ export const findings = (snap) => ({
   wealth: wealth(snap),
   taxes: taxes(snap),
   unions: unions(snap),
+  rtw: rtw(),
   strikes: strikes(snap),
   issues: issues(),
   injury: injury(),
   fatal: fatal(snap),
   lobbying: lobbying(snap),
   force: force(snap),
+  police: police(snap),
   prisons: prisons(snap),
   removals: removals(),
+  detention: detention(),
   deployments: deployments(),
+  stationed: stationed(snap),
+  arms: arms(),
   history: history(),
 });
 
