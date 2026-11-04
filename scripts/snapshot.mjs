@@ -1,11 +1,11 @@
 import { writeFile } from 'node:fs/promises';
 import { retry } from '../src/lib.js';
 import {
-  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, LOBBY, DFA_MEASURES,
+  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, LOBBY, DFA_MEASURES,
 } from '../src/queries.js';
 import {
   parseBlsText, annual, latest, parseBeaFlat, parseRegister, readXlsx, parseValueAdded, parseBds, parseDfa,
-  parseIncomeShares, lobbyingDollars, toModule,
+  parseIncomeShares, parseZ1, lobbyingDollars, toModule,
 } from './parsers.mjs';
 
 const OUT = new URL('../src/snapshot.js', import.meta.url);
@@ -63,6 +63,15 @@ const beaSeries = async (path, codes) => {
 
 const nipa = () => beaSeries('/national', Object.keys(NIPA));
 const fixed = () => beaSeries('/national/FixedAssets', Object.keys(FIXED));
+
+const z1 = async () => {
+  step('fed z.1');
+  const data = parseZ1(await get(Z1.url, 'buffer'), Z1.file, Z1.codes);
+  return Object.fromEntries(Z1.codes.map((code) => {
+    if (!data[code]) throw new Error(`Z.1 returned no data for ${code}`);
+    return [code.replace(/\.A$/, ''), { years: data[code] }];
+  }));
+};
 
 const industries = async () => {
   step('bea value added by industry');
@@ -133,6 +142,7 @@ const SECTIONS = {
   bls: () => bls(now),
   nipa: () => nipa(),
   fixed: () => fixed(),
+  z1: () => z1(),
   industries: () => industries(),
   firms: () => firms(),
   income: () => income(),
