@@ -52,6 +52,7 @@ const firstOf = (map) => {
 const month = (l) => `${MONTHS[Number(l.period.slice(1)) - 1]} ${l.year}`;
 const percent = (v) => `${Number(v.toFixed(1))}%`;
 const hrs = (v) => `${Number(v.toFixed(1))}`;
+const dollars = (v) => `$${exact(v)}`;
 
 const F = findings(snapshot);
 const ACC = accounts(snapshot);
@@ -278,7 +279,7 @@ const renderSpread = () => {
   const p50 = deflated('LEU0252881500').filter((p) => p.x >= p10[0].x);
   const p90 = deflated('LEU0252911500');
   const at = (list, yr) => list.find((p) => p.x === yr);
-  $('#spread-dek').textContent = `Usual weekly earnings of full-time wage and salary workers in ${CPI_YEAR} dollars. ${p10[0].x}: ${cents(p10[0].y)} at the 10th percentile, ${cents(p90[0].y)} at the 90th. ${p10.at(-1).x}: ${cents(p10.at(-1).y)} and ${cents(p90.at(-1).y)}.`;
+  $('#spread-dek').textContent = `Usual weekly earnings of full-time wage and salary workers in ${CPI_YEAR} dollars. ${p10[0].x}: ${dollars(p10[0].y)} at the 10th percentile, ${dollars(p90[0].y)} at the 90th. ${p10.at(-1).x}: ${dollars(p10.at(-1).y)} and ${dollars(p90.at(-1).y)}.`;
   lines({
     mount: $('#deciles-chart'),
     scale: 'linear',
@@ -286,7 +287,7 @@ const renderSpread = () => {
     labelW: 100,
     series: [{ label: '90th pct', rows: p90, alt: true }, { label: 'Median', rows: p50 }, { label: '10th pct', rows: p10, cls: 'mid' }],
     aria: 'Weekly earnings at the 10th, 50th and 90th percentiles',
-    describe: (yr) => tipLines(String(yr), `weekly, ${CPI_YEAR} dollars`, `90th percentile ${cents(at(p90, yr).y)}`, `Median ${cents(at(p50, yr).y)}`, `10th percentile ${cents(at(p10, yr).y)}`,
+    describe: (yr) => tipLines(String(yr), `weekly, ${CPI_YEAR} dollars`, `90th percentile ${dollars(at(p90, yr).y)}`, `Median ${dollars(at(p50, yr).y)}`, `10th percentile ${dollars(at(p10, yr).y)}`,
       `90th ÷ 10th: ${(at(p90, yr).n / at(p10, yr).n).toFixed(2)}`),
   });
   $('#deciles-caption').textContent = `Usual weekly earnings at the 10th percentile, median and 90th percentile, full-time wage and salary workers, annual averages, in ${CPI_YEAR} dollars. Sources: BLS LEU0252911200, LEU0252881500, LEU0252911500.`;
@@ -296,8 +297,8 @@ const renderSpread = () => {
     const values = years.map((y) => m.get(y));
     return h('div', { class: 'panel', 'data-search': `${label} weekly earnings` },
       h('h4', {}, ext(bls(id), label)),
-      h('p', {}, `${cents(values.at(-1))} a week in ${years.at(-1)} · ${cents(values[0])} in ${years[0]}`),
-      miniArea({ years, values, describe: (yr, v) => tipLines(cents(v), `${label}, ${yr}`) }));
+      h('p', {}, `${dollars(values.at(-1))} a week in ${years.at(-1)} · ${dollars(values[0])} in ${years[0]}`),
+      miniArea({ years, values, describe: (yr, v) => tipLines(dollars(v), `${label}, ${yr}`) }));
   }));
 };
 
