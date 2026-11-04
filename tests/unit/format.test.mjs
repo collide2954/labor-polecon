@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  exact, compact, pct, usd, cents, wordy, ordinal, decimal,
+  exact, compact, pct, usd, cents, wordy, ordinal, decimal, placeName,
 } from '../../src/lib.js';
 
 test('exact groups thousands with commas', () => {
@@ -63,4 +63,14 @@ test('wordy spells out large numbers', () => {
 
 test('ordinal adds the English suffix', () => {
   assert.deepEqual([1, 2, 3, 4, 11, 12, 13, 21, 22, 101, 111].map(ordinal), ['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd', '101st', '111th']);
+});
+
+test('placeName writes DMDC country names in ordinary case and order', () => {
+  assert.equal(placeName('JAPAN'), 'Japan');
+  assert.equal(placeName('KOREA, SOUTH'), 'South Korea');
+  assert.equal(placeName('BAHAMAS, THE'), 'The Bahamas');
+  assert.equal(placeName('VIRGIN ISLANDS, U.S.'), 'U.S. Virgin Islands');
+  assert.equal(placeName('MICRONESIA, FEDERATED STATES OF'), 'Federated States of Micronesia');
+  assert.equal(placeName('BOSNIA AND HERZEGOVINA'), 'Bosnia and Herzegovina');
+  assert.equal(placeName('CONGO (KINSHASA)'), 'Congo (Kinshasa)');
 });

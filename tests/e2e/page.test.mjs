@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { start } from '../../scripts/serve.mjs';
 import snapshot from '../../src/snapshot.js';
 import {
-  TIMELINE, PEOPLE, AGENCIES, EXAMPLES, COAL,
+  TIMELINE, PEOPLE, AGENCIES, EXAMPLES, COAL, ORDER, ABROAD,
 } from '../../src/facts.js';
 import { exact, identify } from '../../src/lib.js';
 import { findings, records } from '../../src/findings.js';
@@ -48,12 +48,12 @@ const CHAPTERS = {
   surplus: ['surplus', 'industries', 'productivity'],
   wages: ['wages', 'spread', 'basket', 'canal'],
   accumulation: ['composition', 'profit'],
-  monopoly: ['concentration', 'finance', 'export', 'world', 'rentier'],
+  monopoly: ['concentration', 'finance', 'export', 'claims', 'world', 'rentier'],
   reserve: ['unemployment', 'layers', 'class'],
   population: ['population', 'nativity', 'poverty', 'regions'],
   distribution: ['income', 'households', 'wealth', 'taxes'],
-  conflict: ['unions', 'strikes', 'injury', 'lobbying'],
-  order: ['force', 'prisons', 'removals', 'deployments'],
+  conflict: ['unions', 'rtw', 'strikes', 'injury', 'lobbying'],
+  order: ['force', 'police', 'prisons', 'removals', 'detention', 'deployments', 'arms'],
   reference: ['history', 'series', 'records-section', 'decoder', 'reference', 'sources'],
 };
 
@@ -164,6 +164,19 @@ test('historical tables open with their series numbers', async () => {
   assert.equal(await page.locator('#issues-table tbody tr').count(), 38);
   await page.click('#unemployment details.hist summary');
   assert.equal(await page.locator('#unemployment-table tbody tr').count(), 58);
+  await page.close();
+});
+
+test('right-to-work, troop and arms figures list every state, country and supplier', async () => {
+  const { page } = await open();
+  await page.click('#rtw details.hist summary');
+  assert.equal(await page.locator('#rtw-table tbody tr').count(), ORDER.rightToWork.rows.length);
+  assert.match(await page.textContent('#rtw-table caption'), /R42575/);
+  assert.equal(await page.locator('#troops-chart [data-row]').count(), 15);
+  assert.equal(await page.locator('#arms-chart [data-row]').count(), ABROAD.arms.columns.length - 2);
+  assert.equal(await page.locator('#arms-chart .dot.hi').count(), 1);
+  assert.equal(await page.locator('#detention-chart .bar').count(), ORDER.detention.rows.length);
+  assert.equal(await page.locator('#affiliates-chart .bar').count(), ABROAD.affiliates.rows.length);
   await page.close();
 });
 

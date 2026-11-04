@@ -63,16 +63,19 @@ const fixture = {
     B703RC: yrs([[2025, 300]]),
     A048RC: yrs([[2025, 164]]),
     A065RC: yrs([[2025, 4000]]),
-    A191RC: yrs([[1959, 1000], [2025, 1000]]),
+    A191RC: yrs([[1945, 1000], [1959, 1000], [2025, 1000]]),
     G16008: yrs([[1959, 8], [2025, 18]]),
-    B230RC: yrs([[1978, 222585], [2008, 304718], [2021, 332048]]),
+    B230RC: yrs([[1978, 222585], [1993, 260000], [2008, 304718], [2021, 332048]]),
     W005RC: yrs([[1929, 100], [2025, 1000]]),
     B075RC: yrs([[1929, 33], [2025, 78]]),
     A445RC: yrs([[1948, 96], [2025, 400]]),
     A587RC: yrs([[2025, 100]]),
   },
   fixed: { k1pnofi2es00: yrs([[1971, 300], [2024, 3500]]), m1n21001es00: yrs([[2025, 10]]), m1n23001es00: yrs([[2025, 1]]) },
-  z1: { LM105020015: yrs([[1971, 75], [2024, 500]]) },
+  z1: { LM105020015: yrs([[1971, 75], [2024, 500]]), FL264194005: yrs([[1945, 64], [2025, 1282]]), FL264090005: yrs([[1945, 60], [2025, 1939]]) },
+  troops: {
+    report: 'August 2026', asOf: 'August 31, 2026', home: 1175538, overseas: 176410, countries: [['JAPAN', 56122], ['GERMANY', 37561], ['KOREA, SOUTH', 22574], ['ITALY', 12903]],
+  },
   industries: {
     years: [2024, 2025],
     rows: [
@@ -127,12 +130,15 @@ test('findings state each section as a number', () => {
   assert.equal(f.households, 'The top fifth of households received 52.4% of income in 2025; the bottom fifth 3%');
   assert.equal(f.wealth, 'The top 1% hold 32% of net worth and 51% of corporate equities and fund shares, 2026:Q2');
   assert.equal(f.taxes, 'Corporate income taxes: 33% of federal receipts in 1929, 7.8% in 2025');
+  assert.equal(f.rtw, 'Right-to-work states: 12 in 1947, 27 in 2017, 26 from 2024; 50.3% of the population lived in them at the 2020 census');
   assert.equal(f.unions, 'Union members: 10% of wage and salary workers in 2025, against 35.5% of nonfarm employment in 1945');
   assert.equal(f.strikes, '30 major work stoppages in 2025; 470 in 1952');
   assert.equal(f.issues, '1881 to 1905: 53.8% of stoppages were over wages and hours');
   assert.equal(f.injury, 'Coal mining deaths: 3,242 in 1907, 8 in 2025');
   assert.equal(f.fatal, '5,070 fatal work injuries in 2024');
   assert.equal(f.export, 'Corporate profits from the rest of the world: 4% of all corporate profits in 1948, 35.9% in 2025');
+  assert.equal(f.affiliates, 'Majority-owned foreign affiliates of U.S. multinationals: 14 million workers in 2023, 31.9% of worldwide employment');
+  assert.equal(f.claims, 'U.S. claims on the rest of the world: 6.4% of GDP in 1945, 128.2% in 2025. Foreign claims on the U.S.: 6% to 193.9%');
   assert.equal(f.world, 'U.S. share of world GDP: 40% in 1960, 26% in 2025. China: 4% to 17%');
   assert.equal(f.rentier, 'Interest, dividends and rent: 21.6% of personal income in 2025; wages and salaries: 50%');
   assert.equal(f.population, 'Census count: 3,929,214 in 1790, 331,449,281 in 2020');
@@ -140,16 +146,20 @@ test('findings state each section as a number', () => {
   assert.equal(f.poverty, 'Below the poverty line in 2025: 17.3% of Black people, 13.9% of Hispanic people, 7.5% of non-Hispanic white people');
   assert.equal(f.regions, 'The South: 31.9% of the population in 1910, 38.1% in 2020');
   assert.equal(f.force, 'Public order and safety: 0.8% of GDP in 1959, 1.8% in 2025');
+  assert.equal(f.police, 'Local police officers per 10,000 residents: 18.5 in 1993, 18.9 in 2021. Corrections employees: 7 to 7.6');
   assert.equal(f.prisons, 'Sentenced prisoners per 100,000 residents: 79 in 1925, 508 in 2008, 350 in 2021');
   assert.equal(f.removals, 'Noncitizens removed: 2,801 in 1892, 432,334 in 2013, 108,733 in 2022');
+  assert.equal(f.detention, 'Average daily population in ICE detention: 50,165 in fiscal 2019, 19,254 in 2021, 64,508 in 2026 through July');
   assert.equal(f.deployments, 'Uses of U.S. armed forces abroad in the CRS list: 1 in the 1790s, 103 in the 2010s');
+  assert.equal(f.stationed, 'Active-duty military personnel overseas, August 2026: 176,410. Japan 56,122, Germany 37,561, South Korea 22,574');
+  assert.equal(f.arms, 'Arms transfer agreements, 2008 to 2015: United States $265.5B, 45.5% of the world total; Russia $88.5B');
   assert.equal(f.lobbying, 'Business groups here reported $100M in lobbying in 2025; the unions here, $5M');
   assert.match(f.history, /^\d+ events, 1798 to \d{4}$/);
 });
 
 test('real snapshot gives every finding as text without filler words', () => {
   const f = findings(snapshot);
-  assert.ok(Object.keys(f).length >= 41);
+  assert.ok(Object.keys(f).length >= 48);
   for (const [key, text] of Object.entries(f)) {
     assert.equal(typeof text, 'string', key);
     assert.ok(text.length > 10 && text.length < 130, `${key}: ${text}`);

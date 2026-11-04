@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   accounts, workday, deflate, minWageYear, minutes, classShares, reserveLayers, perThousand, shares,
   nationalIncome, federalReceipts, peak, series, cpiIn, ratioSeries, productiveShare, industryRate, WEEK, prisonRates, worldShares, percentOf,
+  lawsInForce, perResidents,
 } from '../../src/calc.js';
 
 const close = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
@@ -198,4 +199,22 @@ test('worldShares divides each economy by the world total, year by year', () => 
 
 test('percentOf adds parts and divides by a total where both exist', () => {
   assert.deepEqual(percentOf(SNAP, ['A033RC', 'A041RC'], 'A032RC'), [[2025, 70]]);
+});
+
+test('lawsInForce counts laws enacted by a year and not yet ended', () => {
+  const rows = [[1947, 'A', null], [2012, 'B', 2024], [2015, 'C', null]];
+  assert.equal(lawsInForce(rows, 1946), 0);
+  assert.equal(lawsInForce(rows, 2012), 2);
+  assert.equal(lawsInForce(rows, 2023), 3);
+  assert.equal(lawsInForce(rows, 2024), 2);
+});
+
+test('perResidents divides each count by the midyear population where there is one', () => {
+  const snap = { nipa: { B230RC: nipa([[1993, 260000], [2021, 332048]]) } };
+  const out = perResidents(snap, [[1993, 480925, 181372], [1994, 1, 1], [2021, 628620, 253888]]);
+  assert.deepEqual(out.map((r) => r.year), [1993, 2021]);
+  assert.deepEqual(out[0].counts, [480925, 181372]);
+  assert.ok(close(out[0].rates[0], 18.4971153846, 1e-6));
+  assert.ok(close(out[1].rates[1], 7.6460, 1e-4));
+  assert.ok(close(perResidents(snap, [[1993, 260]], 1e5)[0].rates[0], 0.1));
 });
