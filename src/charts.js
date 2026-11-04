@@ -57,7 +57,7 @@ export const tip = {
     const node = tipNode();
     const close = pinned ? html('button', { type: 'button', class: 'tip-close', 'aria-label': 'Close' }, '×') : null;
     close?.addEventListener('click', () => tip.hide());
-    node.replaceChildren(...lines, close);
+    node.replaceChildren(...lines, ...(close ? [close] : []));
     node.hidden = false;
     node.dataset.pinned = String(pinned);
     place(node, pageX, pageY);
