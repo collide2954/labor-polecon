@@ -79,6 +79,8 @@ export const BLS_SERIES = [
   s('LNU02032192', 1948, 'Self-employed, unincorporated, nonagricultural, thousands', 'class'),
   s('LNU02032186', 1948, 'Unpaid family workers, agriculture, thousands', 'class'),
   s('LNU02032193', 1948, 'Unpaid family workers, nonagricultural, thousands', 'class'),
+  s('LNU01073395', 2007, 'Civilian labor force, foreign born, thousands', 'population'),
+  s('LNU01073413', 2007, 'Civilian labor force, native born, thousands', 'population'),
   s('LUU0204899600', 1983, 'Union members, percent of employed wage and salary workers', 'unions'),
   s('LUU0204899700', 1983, 'Represented by unions, percent of employed wage and salary workers', 'unions'),
   s('LUU0204906600', 1983, 'Union members, percent of private wage and salary workers', 'unions'),
@@ -218,6 +220,13 @@ export const WORLD = {
     { id: 'IND', label: 'India' },
     { id: 'WLD', label: 'World' },
   ],
+};
+
+export const CENSUS = {
+  poverty: 'https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov2.xlsx',
+  povertyBlocks: ['All Races', 'White, Not Hispanic', 'White Alone, Not Hispanic', 'Black', 'Black Alone', 'Hispanic (any race)'],
+  homes: 'https://www.census.gov/housing/hvs/data/histtab16.xlsx',
+  popest: 'https://www2.census.gov/programs-surveys/popest/datasets/',
 };
 
 export const PRODUCTIVE = { total: 'CEU0500000082', less: ['CEU4142000082', 'CEU4200000082', 'CEU5500000082'] };
