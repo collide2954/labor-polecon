@@ -214,7 +214,7 @@ const lobbying = (snap) => {
 const exportOfCapital = (snap) => {
   const all = series(snap, 'A051RC');
   const dom = series(snap, 'A445RC');
-  const rows = [...all.keys()].filter((y) => dom.has(y)).sort((a, b) => a - b).map((y) => [y, (all.get(y) - dom.get(y)) / all.get(y)]);
+  const rows = [...all.keys()].filter((y) => dom.has(y) && all.get(y) > 0).sort((a, b) => a - b).map((y) => [y, (all.get(y) - dom.get(y)) / all.get(y)]);
   const [y0, v0] = rows[0];
   const [y1, v1] = rows.at(-1);
   return `Corporate profits from the rest of the world: ${share(v0)} of all corporate profits in ${y0}, ${share(v1)} in ${y1}`;
