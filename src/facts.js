@@ -182,6 +182,15 @@ export const SOURCES = {
   mne2021: 'https://www.bea.gov/news/2023/activities-us-multinational-enterprises-2021',
   mne2022: 'https://www.bea.gov/news/2024/activities-us-multinational-enterprises-2022',
   mne2023: 'https://www.bea.gov/news/2025/activities-us-multinational-enterprises-2023',
+  iceDetention: 'https://www.ice.gov/detain/detention-management',
+  iceDet2019: 'https://www.ice.gov/doclib/detention/FY19-detentionstats.xlsx',
+  iceDet2020: 'https://www.ice.gov/doclib/detention/FY20-detentionstats.xlsx',
+  iceDet2021: 'https://www.ice.gov/doclib/detention/FY21-detentionstats.xlsx',
+  iceDet2022: 'https://www.ice.gov/doclib/detention/FY22-detentionStats.xlsx',
+  iceDet2023: 'https://www.ice.gov/doclib/detention/FY23_detentionStats.xlsx',
+  iceDet2024: 'https://www.ice.gov/doclib/detention/FY24_detentionStats.xlsx',
+  iceDet2025: 'https://www.ice.gov/doclib/detention/FY25_detentionStats09242025.xlsx',
+  iceDet2026: 'https://www.ice.gov/doclib/detention/FY26_detentionStats07202026.xlsx',
 };
 
 export const TAGS = ['hours', 'wages', 'organizing', 'strikes', 'courts', 'safety', 'slavery', 'war', 'sanctions', 'policing', 'finance', 'trade'];
@@ -779,6 +788,29 @@ export const ORDER = {
     [2021, 628620, 253888],
     ],
   },
+  rtwShare: {
+    title: 'Population living in right-to-work states at each census',
+    series: 'Computed from Census population counts by state and the right-to-work table',
+    columns: ['Year', 'States', 'Population in those states', 'United States'],
+    src: 'censusRegions',
+    rows: [
+    [1950, 12, 32477461, 151325798], [1960, 18, 50316797, 179323175],
+    [1970, 19, 57893918, 203211926], [1980, 20, 74927104, 226545805],
+    [1990, 21, 86984802, 248709873], [2000, 21, 104156750, 281421906],
+    [2010, 22, 124290420, 308745538], [2020, 27, 166865170, 331449281],
+    ],
+  },
+  detention: {
+    title: 'Average daily population in ICE detention, by fiscal year',
+    series: 'ICE detention statistics, fiscal years 2019 to 2026',
+    columns: ['Fiscal year', 'Average daily population', 'Months'],
+    src: 'iceDetention',
+    srcs: ['iceDet2019', 'iceDet2020', 'iceDet2021', 'iceDet2022', 'iceDet2023', 'iceDet2024', 'iceDet2025', 'iceDet2026'],
+    rows: [
+    [2019, 50165, 12], [2020, 33724, 12], [2021, 19254, 12], [2022, 22578, 12],
+    [2023, 28289, 12], [2024, 37722, 12], [2025, 48404, 12], [2026, 64508, 10],
+    ],
+  },
 };
 
 export const ABROAD = {
@@ -995,6 +1027,15 @@ export const SOURCE_TITLES = {
   mne2021: ['Other data', 'Activities of U.S. Multinational Enterprises, 2021, BEA news release'],
   mne2022: ['Other data', 'Activities of U.S. Multinational Enterprises, 2022, BEA news release'],
   mne2023: ['Other data', 'Activities of U.S. Multinational Enterprises, 2023, BEA news release'],
+  iceDetention: ['War and order', 'Detention statistics, U.S. Immigration and Customs Enforcement'],
+  iceDet2019: ['War and order', 'ICE detention statistics, fiscal year 2019'],
+  iceDet2020: ['War and order', 'ICE detention statistics, fiscal year 2020'],
+  iceDet2021: ['War and order', 'ICE detention statistics, fiscal year 2021'],
+  iceDet2022: ['War and order', 'ICE detention statistics, fiscal year 2022'],
+  iceDet2023: ['War and order', 'ICE detention statistics, fiscal year 2023'],
+  iceDet2024: ['War and order', 'ICE detention statistics, fiscal year 2024'],
+  iceDet2025: ['War and order', 'ICE detention statistics, fiscal year 2025'],
+  iceDet2026: ['War and order', 'ICE detention statistics, fiscal year 2026 through July 20'],
 };
 
 export const INDUSTRY_LABELS = {
