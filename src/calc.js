@@ -9,7 +9,7 @@ export const WEEK = 365.25 / 7;
 
 const yearly = (weekly) => (weekly * WEEK) / 1000;
 
-const total = (snap, ids, year) => {
+const sumOf = (snap, ids, year) => {
   const values = ids.map((id) => series(snap, id).get(year));
   return values.every((v) => v !== undefined && v !== null) ? values.reduce((a, b) => a + b, 0) : null;
 };
@@ -18,22 +18,22 @@ const productivePayroll = (snap) => {
   const all = series(snap, PRODUCTIVE.total);
   const out = new Map();
   for (const [year, v] of all) {
-    const less = total(snap, PRODUCTIVE.less, year);
+    const less = sumOf(snap, PRODUCTIVE.less, year);
     if (less !== null) out.set(year, yearly(v - less));
   }
   return out;
 };
 
 const wagesOutsideFinance = (snap) => {
-  const exact = (y) => total(snap, ['A4103C'], y) - total(snap, ['N4159C', 'N4164C'], y);
-  const rough = (y) => total(snap, ['A132RC'], y) - (total(snap, ['A443RC'], y) - total(snap, ['B461RC'], y));
-  const naics = [...series(snap, 'A4103C').keys()].filter((y) => total(snap, ['N4159C', 'N4164C'], y) !== null);
+  const exact = (y) => sumOf(snap, ['A4103C'], y) - sumOf(snap, ['N4159C', 'N4164C'], y);
+  const rough = (y) => sumOf(snap, ['A132RC'], y) - (sumOf(snap, ['A443RC'], y) - sumOf(snap, ['B461RC'], y));
+  const naics = [...series(snap, 'A4103C').keys()].filter((y) => sumOf(snap, ['N4159C', 'N4164C'], y) !== null);
   const first = Math.min(...naics);
   const scale = exact(first) / rough(first);
   const out = new Map();
   for (const year of series(snap, 'A132RC').keys()) {
     if (naics.includes(year)) out.set(year, exact(year));
-    else if (total(snap, ['A443RC', 'B461RC'], year) !== null) out.set(year, rough(year) * scale);
+    else if (sumOf(snap, ['A443RC', 'B461RC'], year) !== null) out.set(year, rough(year) * scale);
   }
   return out;
 };
@@ -82,8 +82,8 @@ export const industryRate = (snap, row, year) => {
   const i = snap.industries?.years.indexOf(year) ?? -1;
   if (!m || i < 0) return null;
   const payroll = series(snap, m.payroll).get(year);
-  const wages = total(snap, m.wages, year);
-  const depreciation = total(snap, m.depreciation, year);
+  const wages = sumOf(snap, m.wages, year);
+  const depreciation = sumOf(snap, m.depreciation, year);
   if (payroll === undefined || wages === null || depreciation === null || !row.comp[i]) return null;
   const v = row.comp[i] * (yearly(payroll) / wages);
   const s = row.comp[i] + row.taxes[i] + row.gos[i] - depreciation - v;

@@ -1,7 +1,7 @@
 import { exact, pct, usd, wordy, cents } from './lib.js';
 import {
-  series, accounts, workday, minWageYear, minutes, industrySurplus, classShares, reserveLayers, nationalIncome, federalReceipts, peak, deflate,
-  perThousand,
+  series, accounts, workday, minWageYear, minutes, industryRate, classShares, reserveLayers, nationalIncome, federalReceipts, peak, deflate,
+  perThousand, WAGE_PRICES,
 } from './calc.js';
 import {
   HIST, COAL, MIN_WAGE, TIMELINE, INDUSTRY_LABELS, SOURCES,
@@ -12,14 +12,9 @@ const last = (map) => {
   const year = Math.max(...map.keys());
   return [year, map.get(year)];
 };
-const first = (map) => {
-  const year = Math.min(...map.keys());
-  return [year, map.get(year)];
-};
 const fold = (n) => (n >= 10 ? `${Math.round(n)}` : `${Number(n.toFixed(1))}`);
 const one = (n) => Number(n.toFixed(1));
 const share = (ratio) => pct(ratio);
-const GOVERNMENT = new Set(['Federal', 'State and local', 'Government']);
 
 const hours = (snap) => {
   const [y0, h0] = HIST.hoursRees.rows[0];
@@ -36,44 +31,47 @@ const division = (snap) => {
 
 const surplus = (snap) => {
   const acc = accounts(snap).at(-1);
-  return `Nonfinancial corporations, ${acc.year}: ${Math.round(acc.rate * 100)} cents of surplus value for every dollar of wages`;
+  return `Nonfinancial corporations, ${acc.year}: ${cents(acc.rate)} of surplus value per dollar of variable capital`;
+};
+
+export const industryRates = (snap) => {
+  const { years, rows } = snap.industries;
+  return rows.filter((r) => r.depth === 1).map((r) => ({
+    label: INDUSTRY_LABELS[r.label] ?? r.label, r, rates: years.map((y) => industryRate(snap, r, y)),
+  })).filter((x) => x.rates.at(-1));
 };
 
 const industries = (snap) => {
-  const { years, rows } = snap.industries;
-  const i = years.length - 1;
-  const ranked = rows.filter((r) => r.depth === 1 && !GOVERNMENT.has(r.label))
-    .map((r) => ({ label: INDUSTRY_LABELS[r.label] ?? r.label, v: industrySurplus(r, i) })).filter((r) => r.v !== null);
+  const year = snap.industries.years.at(-1);
+  const ranked = industryRates(snap).map((x) => ({ label: x.label, v: x.rates.at(-1).rate }));
   const hi = peak(ranked, 'v');
   const lo = peak(ranked, 'v', 'min');
-  return `${hi.label}: ${cents(hi.v)} of surplus per dollar of compensation in ${years[i]}. ${lo.label}: ${cents(lo.v)}`;
+  return `${hi.label}: ${cents(hi.v)} of surplus value per dollar of variable capital in ${year}. ${lo.label}: ${cents(lo.v)}`;
+};
+
+export const realEarnings = (snap) => {
+  const ahe = series(snap, 'CEU0500000008');
+  const cpi = series(snap, WAGE_PRICES);
+  const to = Math.max(...[...ahe.keys()].filter((y) => cpi.has(y)));
+  return [...ahe].filter(([y]) => cpi.has(y)).sort((a, b) => a[0] - b[0]).map(([year, v]) => ({ year, nominal: v, v: deflate(v, cpi.get(year), cpi.get(to)), to }));
 };
 
 const productivity = (snap) => {
   const out = series(snap, 'PRS85006093');
-  const pay = series(snap, 'PRS85006153');
-  const [y0, o0] = first(out);
+  const pay = realEarnings(snap);
+  const y0 = pay[0].year;
   const [, o1] = last(out);
-  return `Since ${y0}, output per hour has risen ${fold(o1 / o0)}-fold and real hourly compensation ${fold(last(pay)[1] / pay.get(y0))}-fold`;
-};
-
-const realEarnings = (snap) => {
-  const ahe = series(snap, 'CEU0500000008');
-  const cpi = series(snap, 'CUUR0000SA0');
-  const [to] = last(ahe);
-  return [...ahe].filter(([y]) => cpi.has(y)).map(([year, v]) => ({ year, v: deflate(v, cpi.get(year), cpi.get(to)) }));
+  return `Since ${y0}, output per hour has risen ${fold(o1 / out.get(y0))}-fold, real hourly earnings of production and nonsupervisory workers ${fold(pay.at(-1).v / pay[0].v)}-fold`;
 };
 
 const wages = (snap) => {
   const rows = realEarnings(snap);
-  const top = peak(rows, 'v');
   const now = rows.at(-1);
-  if (top === now) return `Real hourly earnings of production workers, ${now.year}: ${cents(now.v)}, the highest of any year since ${rows[0].year}`;
-  return `Real hourly earnings of production workers peaked in ${top.year} at ${cents(top.v)} in ${now.year} dollars. ${now.year}: ${cents(now.v)}`;
+  return `Real hourly earnings of production and nonsupervisory workers, in ${now.year} dollars: ${cents(rows[0].v)} in ${rows[0].year}, ${cents(now.v)} in ${now.year}`;
 };
 
 export const realMinimum = (snap) => {
-  const cpi = series(snap, 'CUUR0000SA0');
+  const cpi = series(snap, WAGE_PRICES);
   const [to, now] = last(cpi);
   return [...cpi.keys()].sort((a, b) => a - b).map((year) => ({ year, nominal: minWageYear(MIN_WAGE, year) }))
     .filter((r) => r.nominal !== null).map((r) => ({ ...r, real: deflate(r.nominal, cpi.get(r.year), now), to }));
@@ -107,7 +105,7 @@ const canal = () => {
 
 const composition = (snap) => {
   const acc = accounts(snap).at(-1);
-  return `${cents(acc.composition)} of fixed capital for every dollar of yearly wages, ${acc.year}`;
+  return `${cents(acc.composition)} of constant capital for every dollar of variable capital, ${acc.year}`;
 };
 
 const profit = (snap) => {
@@ -157,7 +155,7 @@ const enslaved = () => {
 const income = (snap) => {
   const r = nationalIncome(snap).at(-1);
   const part = (k) => share(r.parts.find((p) => p.key === k).share);
-  return `Compensation: ${part('comp')} of national income, ${r.year}. Corporate profits: ${part('profits')}`;
+  return `Compensation: ${part('comp')} of national income in ${r.year}, of which production and nonsupervisory pay ${share(r.workers)}. Corporate profits: ${part('profits')}`;
 };
 
 const households = (snap) => {
@@ -278,7 +276,7 @@ export const records = (snap) => {
   const acc = accounts(snap);
   const rLo = peak(acc, 'rate', 'min');
   const rHi = peak(acc, 'rate');
-  add(`Rate of surplus value, nonfinancial corporations: ${Math.round(rHi.rate * 100)} cents per dollar of wages in ${rHi.year}, ${Math.round(rLo.rate * 100)} in ${rLo.year}.`, 'beaFlat');
+  add(`Rate of surplus value, nonfinancial corporations: ${cents(rHi.rate)} per dollar of variable capital in ${rHi.year}, ${cents(rLo.rate)} in ${rLo.year}.`, 'beaFlat');
   const short = [...HIST.hoursBls.rows.map((r) => ({ y: r[0], v: r[1] })), ...[...series(snap, 'CEU3000000007')].map(([y, v]) => ({ y, v }))];
   const sLo = peak(short, 'v', 'min');
   add(`Shortest average manufacturing week since 1909: ${sLo.v} hours, in ${sLo.y}.`, 'hsus');
