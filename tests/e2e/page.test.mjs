@@ -513,3 +513,13 @@ test('the footer says AI helped and that a person reviewed the work', async () =
   assert.match(await page.textContent('#foot'), /Not an official government site/);
   await page.close();
 });
+
+test('timeline draws six event lanes with their labels', async () => {
+  const { page } = await open();
+  const labels = await page.$$eval('#timeline-svg .lane-lab', (ts) => ts.map((t) => t.textContent));
+  for (const l of ['Law and the state', 'Strikes and organizing', 'Wars, invasions, coups', 'Finance and money', 'Policing and dissent', 'Trade and capital abroad']) assert.ok(labels.includes(l), l);
+  const rows = await page.$$eval('#timeline-svg [data-event]', (cs) => [...new Set(cs.map((c) => c.getAttribute('cy')))]);
+  assert.equal(rows.length, 6);
+  for (const org of ['war', 'finance', 'police', 'trade']) assert.ok(await page.locator(`#timeline-svg .ev-${org}`).count() >= 10, org);
+  await page.close();
+});
