@@ -521,8 +521,14 @@ const fractionalYear = (date) => {
 export const timeline = ({ mount, events, people, projects, limits, onSelect, onRange }) => {
   let domain = [...limits];
   let selected = null;
-  const lanes = { state: 46, labor: 78, dol: 122, afl: 168, launch: 214 };
-  const H = 248;
+  const EVENT_LANES = [
+    ['State', 'Law and the state'], ['Labor', 'Strikes and organizing'], ['War', 'Wars, invasions, coups'],
+    ['Finance', 'Finance and money'], ['Police', 'Policing and dissent'], ['Trade', 'Trade and capital abroad'],
+  ];
+  const laneY = Object.fromEntries(EVENT_LANES.map(([org], i) => [org, 46 + i * 32]));
+  const top = 46 + EVENT_LANES.length * 32;
+  const lanes = { dol: top + 12, afl: top + 58, launch: top + 104 };
+  const H = top + 138;
   const draw = () => {
     const W = widthOf(mount);
     const L = 8;
@@ -537,8 +543,7 @@ export const timeline = ({ mount, events, people, projects, limits, onSelect, on
       ticks.map((t) => el('g', {},
         el('line', { class: 'grid', x1: x(t), x2: x(t), y1: 26, y2: H - 8 }),
         el('text', { x: x(t), y: 14, 'text-anchor': 'middle' }, t))),
-      el('text', { class: 'lane-lab', x: L, y: lanes.state - 12 }, 'Law and the state'),
-      el('text', { class: 'lane-lab', x: L, y: lanes.labor - 12 }, 'Strikes and organizing'),
+      EVENT_LANES.map(([org, label]) => el('text', { class: 'lane-lab', x: L, y: laneY[org] - 12 }, label)),
       el('text', { class: 'lane-lab', x: L, y: lanes.dol - 10 }, 'Secretaries of Labor'),
       el('text', { class: 'lane-lab', x: L, y: lanes.afl - 10 }, 'AFL and AFL-CIO presidents'),
       el('text', { class: 'lane-lab', x: L, y: lanes.launch - 12 }, 'Agencies'),
@@ -546,11 +551,11 @@ export const timeline = ({ mount, events, people, projects, limits, onSelect, on
         const v = fractionalYear(e.date);
         const on = selected?.type === 'event' && selected.i === i;
         return el('circle', {
-          class: `ev${e.org === 'Labor' ? ' alt' : ''}${on ? ' on' : ''}`,
+          class: `ev ev-${e.org.toLowerCase()}${e.org === 'Labor' ? ' alt' : ''}${on ? ' on' : ''}`,
           'data-event': i,
           'data-k': `event:${i}`,
           cx: x(v),
-          cy: e.org === 'Labor' ? lanes.labor : lanes.state,
+          cy: laneY[e.org],
           r: on ? 7 : 5,
           style: `--i:${i}`,
           visibility: visible(v) ? 'visible' : 'hidden',

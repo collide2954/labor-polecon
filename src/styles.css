@@ -981,6 +981,26 @@ table.data {
   fill: var(--ink);
 }
 
+.timeline .ev-war {
+  fill: var(--s1);
+  stroke: var(--s1);
+}
+
+.timeline .ev-finance {
+  fill: var(--s3);
+  stroke: var(--s3);
+}
+
+.timeline .ev-police {
+  fill: var(--s2);
+  stroke: var(--s2);
+}
+
+.timeline .ev-trade {
+  fill: var(--s4);
+  stroke: var(--s4);
+}
+
 .timeline .ev.on,
 .timeline .tenure.on,
 .timeline .launch.on {
