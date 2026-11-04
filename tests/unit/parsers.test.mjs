@@ -15,6 +15,9 @@ import {
   parseIncomeShares,
   parseZ1,
   parseWorldBank,
+  parsePovertyByRace,
+  parseHomeownership,
+  parseAgeSex,
   lobbyingDollars,
   toModule,
 } from '../../scripts/parsers.mjs';
@@ -185,6 +188,49 @@ test('parseWorldBank groups values by indicator and country in year order and dr
     'NY.GDP.MKTP.CD': { USA: [[2024, 29], [2025, 30]] },
     'NV.IND.MANF.CD': { WLD: [[2021, 16]] },
   });
+});
+
+test('parsePovertyByRace reads the percent below poverty for each named block, newest method first', () => {
+  const rows = [
+    ['Table 2. Poverty Status'],
+    ['All Races'],
+    ['Year', 'All people'],
+    [null, 'Total', 'Below poverty'],
+    [null, null, 'Number', 'Percent'],
+    [2025, 338100, 34510, 10.2],
+    ['2024 (2)', 337000, 36030, 10.7],
+    ['2017 (21)', 1, 2, 12.3],
+    [2017, 1, 2, 12.5],
+    ['Black'],
+    ['Year', 'All people'],
+    [1959, 18000, 9927, 55.1],
+  ];
+  assert.deepEqual(parsePovertyByRace(rows, ['All Races', 'Black', 'Missing']), {
+    'All Races': [[2017, 12.3], [2024, 10.7], [2025, 10.2]],
+    Black: [[1959, 55.1]],
+  });
+});
+
+test('parseHomeownership averages the quarters of complete years', () => {
+  const rows = [
+    ['Year and Quarter', 'U.S.', 'Non-Hispanic White Alone', 'Black Alone', 'All Other Races', null, 'Hispanic (of any race)'],
+    [1994],
+    ['1st', 63.8, 69.8, 42.1, 50.1, '(X)', 40.3],
+    ['2nd', 64.0, 70.0, 42.3, 46.3, '(X)', 41.1],
+    ['3rd', 64.1, 70.0, 42.7, 46.9, '(X)', 41.1],
+    ['4th', 64.1, 70.2, 42.9, 47.6, '(X)', 42.2],
+    [2026],
+    ['1st', 65, 74, 45, 1, 1, 49],
+  ];
+  const out = parseHomeownership(rows);
+  assert.deepEqual(out.columns, ['U.S.', 'Non-Hispanic White Alone', 'Black Alone', 'Hispanic (of any race)']);
+  assert.deepEqual(out.years.map((r) => r[0]), [1994]);
+  assert.deepEqual(out.years[0].map((v) => Number(v.toFixed(3))), [1994, 64, 70, 42.5, 41.175]);
+});
+
+test('parseAgeSex sums both sexes by single year of age for the latest estimate', () => {
+  const csv = 'SEX,AGE,ESTIMATESBASE2020,POPESTIMATE2024,POPESTIMATE2025\n0,0,9,10,11\n0,1,9,20,21\n0,999,9,30,32\n1,0,4,5,6\n';
+  assert.deepEqual(parseAgeSex(csv), { year: 2025, ages: [[0, 11], [1, 21]], total: 32 });
 });
 
 test('parseValueAdded splits each industry into compensation, taxes and surplus', () => {
