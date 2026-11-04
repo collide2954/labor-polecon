@@ -148,7 +148,9 @@ const renderDivision = () => {
     return { key: year, label: String(year), a: d.necessary, b: d.surplus, hours, rate: r.rate };
   }).filter(Boolean);
   const first = rows[0];
-  $('#division-dek').textContent = `In ${first.key}, ${hrs(first.a)} of ${first.hours} hours matched wages and ${hrs(first.b)} matched surplus value. In ${rows.at(-1).key}, ${hrs(rows.at(-1).a)} of ${rows.at(-1).hours}, and ${hrs(rows.at(-1).b)}.`;
+  const most = peak(rows, 'b');
+  const least = peak(rows, 'b', 'min');
+  $('#division-dek').textContent = `${first.key}: ${hrs(first.b)} of ${first.hours} hours matched surplus value. Most in the years shown: ${hrs(most.b)} hours in ${most.key}. Fewest: ${hrs(least.b)} in ${least.key}.`;
   splitBars({
     mount: $('#division-chart'),
     rows,
@@ -546,8 +548,8 @@ const renderClass = () => {
     mount: $('#enslaved-chart'),
     rows: lf.filter((r) => r[3] !== null).map(([year, total, free, enslaved]) => ({ year, total, free, enslaved })),
     key: (r) => r.year,
-    value: (r) => r.total,
-    overlay: (r) => r.enslaved,
+    value: (r) => r.total * 1000,
+    overlay: (r) => r.enslaved * 1000,
     height: 200,
     aria: 'Labor force, free and enslaved, 1800 to 1860',
     describe: (r) => tipLines(`${exact(r.total * 1000)} workers`, String(r.year), `${exact(r.enslaved * 1000)} enslaved, ${pct(r.enslaved / r.total)}`, `${exact(r.free * 1000)} free`),
