@@ -471,6 +471,7 @@ export const lines = ({
   const x = scaleLinear([xs[0], xs.at(-1)], [L, W - R]);
   const y = log ? scaleLog([lo, hi], [H - B, T]) : scaleLinear([lo, hi], [H - B, T]);
   const ticks = log ? logTicks(lo, hi).filter((t) => Math.round(Math.log10(t)) % logStep === 0) : [...down, ...up];
+  const dx = xs.length > 1 ? Math.min(...xs.slice(1).map((v, k) => v - xs[k])) : 1;
   const step = labelStep(xs.length, W - L - R, 40);
   const labelY = spread(series.map((s) => y(s.rows.at(-1).y)), 14, T, H - B);
   const cross = el('line', { class: 'cross', y1: T, y2: H - B, x1: 0, x2: 0, visibility: 'hidden' });
@@ -479,7 +480,7 @@ export const lines = ({
       el('line', { class: t === 0 && lo < 0 ? 'base' : 'grid', x1: L, x2: W - R, y1: y(t), y2: y(t) }),
       el('text', { x: L - 8, y: y(t) + 4, 'text-anchor': 'end' }, yFormat(t)))),
     el('line', { class: 'base', x1: L, x2: W - R, y1: H - B, y2: H - B }),
-    xs.map((v) => (v % step === 0 ? el('text', { x: x(v), y: H - 6, 'text-anchor': 'middle' }, v) : null)),
+    xs.map((v) => (v % (step * dx) === 0 ? el('text', { x: x(v), y: H - 6, 'text-anchor': 'middle' }, v) : null)),
     series.map((s, n) => {
       const last = s.rows.at(-1);
       const ly = labelY[n];
