@@ -29,6 +29,7 @@ export const SOURCES = {
   bdsFiles: 'https://www2.census.gov/programs-surveys/bds/tables/time-series/',
   incomeH2: 'https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-income-households/h02ar.xlsx',
   dfa: 'https://www.federalreserve.gov/releases/z1/dataviz/dfa/',
+  z1: 'https://www.federalreserve.gov/releases/z1/',
   lda: 'https://lda.gov/api/',
   minWage: 'https://www.dol.gov/agencies/whd/minimum-wage/history/chart',
   msha: 'https://www.msha.gov/coal-fatalities',
@@ -266,14 +267,15 @@ export const CADENCES = [
 const tm = (term, measure, table) => ({ term, measure, table });
 
 export const TERMS = [
-  tm('Variable capital (v)', 'Compensation of employees, nonfinancial corporate business', 'NIPA Table 1.14, line 20'),
-  tm('Surplus value (s)', 'Net value added less compensation of employees', 'NIPA Table 1.14, line 19 less line 20'),
-  tm('Constant capital, fixed (C)', 'Current-cost net stock of fixed assets, nonfinancial corporations, at the end of the prior year', 'Fixed Assets Table 6.1, line 4'),
+  tm('Variable capital (v)', 'Compensation of employees of nonfinancial corporations times the share of private wages, outside finance and real estate, paid to production and nonsupervisory workers outside trade and finance', 'NIPA Tables 1.14 line 20, 2.1 line 4, 6.3D lines 3, 57 and 62; CES aggregate weekly payrolls'),
+  tm('Surplus value (s)', 'Net value added less variable capital. It includes profits, interest, taxes on production and the pay of supervisors, managers, officers and trade staff', 'NIPA Table 1.14, line 19 less v'),
+  tm('Constant capital (C)', 'Current-cost net stock of fixed assets plus inventories, nonfinancial corporations, at the end of the prior year', 'Fixed Assets Table 6.1, line 4; Financial Accounts LM105020015'),
   tm('Rate of surplus value', 's ÷ v', 'Computed'),
-  tm('Organic composition of capital', 'C ÷ v', 'Computed'),
+  tm('Value composition of capital', 'C ÷ v', 'Computed'),
   tm('Rate of profit', 's ÷ C', 'Computed'),
   tm('Necessary and surplus labor time', 'Weekly hours split in the ratio v : s', 'Computed'),
-  tm('Industry surplus per dollar of wages', '(Value added − compensation) ÷ compensation, gross of depreciation', 'GDP by Industry, Table TVA113'),
+  tm('Rate of surplus value by industry', '(Value added − depreciation − v) ÷ v, with v the industry’s compensation times its production and nonsupervisory share of wages', 'GDP by Industry TVA113; Fixed Assets Table 3.4ESI; NIPA Table 6.3D; CES payrolls'),
+  tm('Real wages', 'Money wages deflated by consumer prices for urban wage earners and clerical workers', 'CPI-W, CWUR0000SA0'),
 ];
 
 export const MIN_WAGE = [
@@ -480,6 +482,7 @@ export const SOURCE_TITLES = {
   bdsFiles: ['Census and Fed', 'Business Dynamics Statistics data files'],
   incomeH2: ['Census and Fed', 'Historical income table H-2: shares of aggregate income by quintile'],
   dfa: ['Census and Fed', 'Distributional Financial Accounts, Federal Reserve Board'],
+  z1: ['Census and Fed', 'Financial Accounts of the United States (Z.1), Federal Reserve Board'],
   lda: ['Other data', 'Lobbying Disclosure Act API'],
   minWage: ['Other data', 'History of federal minimum wage rates, Wage and Hour Division'],
   msha: ['Other data', 'Coal fatalities for 1900 through 2025, MSHA'],
