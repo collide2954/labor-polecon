@@ -64,6 +64,12 @@ test('parseBlsText reads every series block in either column order', () => {
   assert.equal(out.LUU0204899600.rows[1].value, 10);
 });
 
+test('parseBlsText reads CPS blocks whose value column is called Estimate', () => {
+  const out = parseBlsText('<PRE>Series Id:          LNU04000000\n\nNot Seasonally Adjusted\nSeries title:       (Unadj) Unemployment Rate\n\nSeries id,Year,Period,Estimate\nLNU04000000,1947,M13,3.9\nLNU04000000,1948,M01,4.0\n</PRE>');
+  assert.equal(out.LNU04000000.title, '(Unadj) Unemployment Rate');
+  assert.deepEqual(out.LNU04000000.rows.map((r) => r.value), [3.9, 4]);
+});
+
 test('annual prefers published annual values and averages complete years otherwise', () => {
   assert.deepEqual(annual([
     { year: 2023, period: 'M13', value: 5 },
