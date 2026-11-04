@@ -203,8 +203,15 @@ export const FIXED = {
 
 export const Z1 = {
   url: 'https://www.federalreserve.gov/releases/z1/current/z1_csv_files.zip',
-  file: 'csv/S11_1_i_a.csv',
-  codes: ['LM105020015.A'],
+  files: {
+    'csv/S11_1_i_a.csv': ['LM105020015.A'],
+    'csv/S2_i_a.csv': ['FL264090005.A', 'FL264194005.A', 'LM263192101.A', 'FL263192305.A'],
+  },
+};
+
+export const TROOPS = {
+  page: 'https://dwp.dmdc.osd.mil/dwp/api/page?pageId=27',
+  file: (id, group) => `https://dwp.dmdc.osd.mil/dwp/api/downloadZ?fileId=${id}&groupName=${group}`,
 };
 
 export const WORLD = {
