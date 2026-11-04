@@ -257,10 +257,10 @@ const rentier = (snap) => {
   return `Interest, dividends and rent: ${share(v / 100)} of personal income in ${year}; wages and salaries: ${share(pay)}`;
 };
 
-export const rtwYears = () => {
+export const rtwYears = (until = 0) => {
   const rows = ORDER.rightToWork.rows;
   const ends = rows.map((r) => r[2]).filter((y) => y !== null);
-  const to = Math.max(...rows.map((r) => r[0]), ...ends);
+  const to = Math.max(until, ...rows.map((r) => r[0]), ...ends);
   return Array.from({ length: to - rows[0][0] + 1 }, (_, i) => rows[0][0] + i).map((year) => ({ year, n: lawsInForce(rows, year) }));
 };
 

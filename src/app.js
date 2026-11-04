@@ -1,20 +1,20 @@
 import snapshot from './snapshot.js';
 import {
-  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, COAL, HIST, POP, ORDER,
+  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, COAL, HIST, POP, ORDER, ABROAD,
 } from './facts.js';
 import {
   exact, compact, pct, usd, cents, identify, matches, filterTimeline, sortRows, LENSES, readLens, inLens, lensSearch, yearOf,
-  BLS_SURVEYS,
+  BLS_SURVEYS, placeName,
 } from './lib.js';
 import {
   PRICES, LOBBY, DFA_GROUPS, BLS_SERIES, NIPA, FIXED,
 } from './queries.js';
 import {
-  findings, realMinimum, realEarnings, industryRates, records,
+  findings, realMinimum, realEarnings, industryRates, records, armsTotals, CLAIMS, rtwYears, fiscalThrough,
 } from './findings.js';
 import {
   series, accounts, workday, minutes, classShares, reserveLayers, nationalIncome, federalReceipts, perThousand, deflate, peak, WAGE_PRICES,
-  percentOf, prisonRates, worldShares,
+  percentOf, prisonRates, worldShares, perResidents,
 } from './calc.js';
 import {
   columns, dotplot, stackedArea, miniArea, waffle, lines, timeline, observeFigures, countUp, tipLines, dumbbell, splitBars,
@@ -346,6 +346,12 @@ const histTable = (sel, table, format = exact) => fill(sel,
   h('tbody', {}, table.rows.map((r) => h('tr', { 'data-search': `${table.title} ${r[0]}` },
     r.map((v, i) => h('td', { class: i ? 'n' : null }, i === 0 ? String(v) : v === null ? '—' : format(v, i)))))));
 
+const factTable = (sel, table, format) => fill(sel,
+  h('caption', {}, `${table.title}. ${table.series}. `, cite(table.src)),
+  h('thead', {}, h('tr', {}, table.columns.map((c) => h('th', { scope: 'col' }, c)))),
+  h('tbody', {}, table.rows.map((r) => h('tr', { 'data-search': `${table.title} ${r.join(' ')}` },
+    r.map((v, i) => h('td', { class: i && typeof v === 'number' ? 'n' : null }, i === 0 ? String(v) : v === null ? '—' : format(v, i)))))));
+
 const renderCanal = () => {
   const rows = HIST.erie.rows;
   const laborer = rows.filter((r) => r[1] !== null).map(([x, y]) => ({ x, y }));
@@ -453,6 +459,43 @@ const renderExport = () => {
       const r = rows.find((p) => p.x === yr);
       return tipLines(percent(r.y), `of corporate profits, ${yr}`, `${usd(r.abroad * 1e6)} from the rest of the world`, `${usd(r.all * 1e6)} in all`);
     },
+  });
+};
+
+const renderAffiliates = () => {
+  const rows = ABROAD.affiliates.rows.map(([year, workers, part]) => ({ year, workers, part }));
+  columns({
+    mount: $('#affiliates-chart'),
+    rows,
+    key: (r) => r.year,
+    value: (r) => r.workers,
+    height: 180,
+    yFormat: (v) => (v ? `${v}M` : '0'),
+    aria: 'Employment by majority-owned foreign affiliates of U.S. multinationals, millions',
+    describe: (r) => tipLines(`${r.workers} million`, `workers in foreign affiliates, ${r.year}`, `${r.part}% of worldwide employment`),
+  });
+};
+
+const renderClaims = () => {
+  const list = [
+    { label: 'Foreign claims on the U.S.', ids: CLAIMS[1], alt: true },
+    { label: 'U.S. claims abroad', ids: CLAIMS[0], cls: 'mid' },
+    { label: 'Direct investment abroad', ids: CLAIMS[2], color: CAT[2] },
+  ].map((s) => ({ ...s, rows: percentOf(snapshot, s.ids, 'A191RC').map(([x, y]) => ({ x, y })) }));
+  const year = list[0].rows.at(-1).x;
+  const level = (ids) => ids.reduce((n, id) => n + series(snapshot, id).get(year), 0) * 1e6;
+  const [ours, theirs, direct] = CLAIMS.map(level);
+  $('#claims-dek').textContent = `End of ${year}: U.S. claims on the rest of the world ${usd(ours)}, of which direct investment ${usd(direct)}; foreign claims on the U.S. ${usd(theirs)}, ${usd(theirs - ours)} more.`;
+  const at = (s, yr) => s.rows.find((p) => p.x === yr);
+  lines({
+    mount: $('#claims-chart'),
+    scale: 'linear',
+    yFormat: (v) => `${v}%`,
+    labelW: 150,
+    height: 300,
+    series: list,
+    aria: 'Claims between the United States and the rest of the world, percent of GDP',
+    describe: (yr) => tipLines(String(yr), 'percent of GDP, end of year', ...list.map((s) => `${s.label} ${percent(at(s, yr).y)}`)),
   });
 };
 
@@ -664,6 +707,32 @@ const renderForce = () => {
   });
 };
 
+const renderPolice = () => {
+  const rows = perResidents(snapshot, ORDER.police.rows);
+  const officers = rows.map((r) => ({ x: r.year, y: r.rates[0] }));
+  const guards = rows.map((r) => ({ x: r.year, y: r.rates[1] }));
+  const now = rows.at(-1);
+  $('#police-dek').textContent = `${now.year}: ${exact(now.counts[0])} full-time police officers and ${exact(now.counts[1])} full-time corrections employees in local governments.`;
+  const at = (list, yr) => list.find((p) => p.x === yr);
+  lines({
+    mount: $('#officers-chart'),
+    scale: 'linear',
+    yFormat: (v) => String(v),
+    labelW: 110,
+    height: 240,
+    series: [{ label: 'Police officers', rows: officers, alt: true }, { label: 'Corrections', rows: guards, cls: 'mid' }],
+    aria: 'Local government police officers and corrections employees per 10,000 residents',
+    describe: (yr) => {
+      const r = rows.find((x) => x.year === yr);
+      return tipLines(String(yr), 'per 10,000 residents', `Police officers ${hrs(at(officers, yr).y)}, ${exact(r.counts[0])}`, `Corrections ${hrs(at(guards, yr).y)}, ${exact(r.counts[1])}`);
+    },
+  });
+  const have = new Set(rows.map((r) => r.year));
+  const gaps = Array.from({ length: now.year - rows[0].year }, (_, i) => rows[0].year + i).filter((y) => !have.has(y));
+  const list = gaps.length > 1 ? `${gaps.slice(0, -1).join(', ')} and ${gaps.at(-1)}` : String(gaps[0]);
+  $('#officers-caption').textContent = `Full-time employees of local governments per 10,000 residents: police officers with power of arrest, and corrections employees, ${rows[0].year} to ${now.year}. Not shown: ${list}. Sources: Census Annual Survey of Public Employment and Payroll, local government tables; BEA NIPA Table 2.1, line 40.`;
+};
+
 const renderPrisons = () => {
   const rows = prisonRates(snapshot, ORDER.prisonsEarly.rows);
   const top = peak(rows, 'rate');
@@ -715,6 +784,58 @@ const renderDeployments = () => {
     aria: 'Uses of U.S. armed forces abroad by decade',
     describe: (r) => tipLines(String(r.n), `instances begun in the ${r.decade}s`),
   });
+};
+
+const renderDetention = () => {
+  const rows = ORDER.detention.rows.map(([year, adp, months]) => ({ year, adp, months, partial: months < 12 }));
+  const lo = peak(rows, 'adp', 'min');
+  const now = rows.at(-1);
+  $('#detention-dek').textContent = `Fiscal ${now.year} through ${fiscalThrough(now.months)}: ${exact(now.adp)} people held on an average day, ${(now.adp / lo.adp).toFixed(1)} times the ${exact(lo.adp)} of fiscal ${lo.year}.`;
+  columns({
+    mount: $('#detention-chart'),
+    rows,
+    key: (r) => r.year,
+    value: (r) => r.adp,
+    height: 200,
+    aria: 'Average daily population in ICE detention by fiscal year',
+    describe: (r) => tipLines(exact(r.adp), `held on an average day, fiscal ${r.year}`, ...(r.partial ? [`October to ${fiscalThrough(r.months)}`] : [])),
+  });
+};
+
+const renderTroops = () => {
+  const t = snapshot.troops;
+  const rows = t.countries.slice(0, 15).map(([name, n]) => ({ key: name, label: placeName(name), value: n }));
+  dotplot({
+    mount: $('#troops-chart'),
+    rows,
+    scale: 'linear',
+    labelShare: 0.3,
+    aria: `Active-duty military personnel abroad by duty location, ${t.report}`,
+    describe: (r) => tipLines(exact(r.value), `${r.label}, ${t.report}`, `${pct(r.value / t.overseas)} of those overseas`),
+  });
+  $('#troops-caption').textContent = `Active-duty military personnel by assigned duty location, the 15 places outside the United States with the most, ${t.asOf}. ${exact(t.overseas)} overseas in all, in ${t.countries.length} places; ${exact(t.home)} in the United States. DMDC lists territories such as Guam and Puerto Rico apart from the United States. The report covers unclassified data and leaves out some personnel on temporary duty or deployed in contingency operations. Source: Defense Manpower Data Center, personnel by duty location.`;
+};
+
+const renderArms = () => {
+  const { rows: years } = ABROAD.arms;
+  const all = years.reduce((n, r) => n + r.at(-1), 0) * 1e6;
+  const usAt = ABROAD.arms.columns.indexOf('United States');
+  const top = years.reduce((a, b) => (b[usAt] > a[usAt] ? b : a));
+  const span = `${years[0][0]} to ${years.at(-1)[0]}`;
+  $('#arms-dek').textContent = `${span}: ${usd(all)} in arms transfer agreements with all recipients. The largest U.S. year was ${top[0]}, at ${usd(top[usAt] * 1e6)}.`;
+  const rows = sortRows(armsTotals().map((s) => ({
+    key: s.label, label: s.label, value: s.value * 1e6, hi: s.label === 'United States',
+  })), 'value', 'desc');
+  dotplot({
+    mount: $('#arms-chart'),
+    rows,
+    scale: 'linear',
+    format: usd,
+    labelShare: 0.3,
+    aria: `Arms transfer agreements by supplier, ${span}`,
+    describe: (r) => tipLines(usd(r.value), `${r.label}, ${span}`, `${pct(r.value / all)} of the world total`),
+  });
+  factTable('#arms-table', ABROAD.arms, (v) => exact(v));
 };
 
 const SIZE_GROUPS = [
@@ -975,6 +1096,42 @@ const renderUnions = () => {
     aria: 'Union members, 1897 to 1970',
     describe: (r) => tipLines(exact(r.members * 1000), `union members, ${r.year}`, r.year < 1930 ? 'Historical Statistics D 940' : 'Historical Statistics D 946'),
   });
+};
+
+const renderRtw = () => {
+  const years = rtwYears(Number(snapshot.generated.slice(0, 4)));
+  const rows = years.map((r) => ({ x: r.year, y: r.n }));
+  const laws = ORDER.rightToWork.rows;
+  const now = rows.at(-1);
+  $('#rtw-dek').textContent = `${now.y} states in ${now.x}. The most recent laws: ${laws.filter((r) => r[0] >= 2012 && r[2] === null).map((r) => `${r[1]} ${r[0]}`).join(', ')}.`;
+  const named = (yr) => [
+    ...laws.filter((r) => r[0] === yr).map((r) => `Enacted: ${r[1]}`),
+    ...laws.filter((r) => r[2] === yr).map((r) => `Ended: ${r[1]}`),
+  ];
+  lines({
+    mount: $('#rtw-chart'),
+    scale: 'linear',
+    yFormat: (v) => String(v),
+    labelW: 60,
+    height: 220,
+    series: [{ label: 'States', rows, alt: true }],
+    aria: 'States with a right-to-work law in force',
+    describe: (yr) => tipLines(String(rows.find((p) => p.x === yr).y), yr === now.x ? `states, ${yr}` : `states, end of ${yr}`, ...named(yr)),
+  });
+  const share = ORDER.rtwShare.rows.map(([year, states, people, all]) => ({
+    year, states, people, all, v: (people / all) * 100,
+  }));
+  columns({
+    mount: $('#rtw-share-chart'),
+    rows: share,
+    key: (r) => r.year,
+    value: (r) => r.v,
+    height: 180,
+    yFormat: (v) => `${v}%`,
+    aria: 'Percent of the population in right-to-work states at each census',
+    describe: (r) => tipLines(percent(r.v), `of the population, ${r.year} census`, `${r.states} states`, `${exact(r.people)} of ${exact(r.all)} people`),
+  });
+  factTable('#rtw-table', ORDER.rightToWork, (v) => String(v));
 };
 
 const renderStrikes = () => {
@@ -1379,6 +1536,8 @@ const drawCharts = () => {
   renderConcentration();
   renderFinance();
   renderExport();
+  renderAffiliates();
+  renderClaims();
   renderWorld();
   renderRentier();
   renderUnemployment();
@@ -1393,13 +1552,18 @@ const drawCharts = () => {
   renderWealth();
   renderTaxes();
   renderUnions();
+  renderRtw();
   renderStrikes();
   renderInjury();
   renderLobbying();
   renderForce();
+  renderPolice();
   renderPrisons();
   renderRemovals();
+  renderDetention();
   renderDeployments();
+  renderTroops();
+  renderArms();
   tl?.redraw();
   applySearch();
 };

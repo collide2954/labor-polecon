@@ -209,7 +209,7 @@
   <div class="chapter wrap" id="ch-monopoly" data-chapter="monopoly">
     <p class="chapter-no">Part 5</p>
     <h2 class="chapter-title">Monopoly and finance</h2>
-    <p class="chapter-dek">The size of firms, the share of finance, profits from abroad, shares of world output, and income from property.</p>
+    <p class="chapter-dek">The size of firms, the share of finance, profits and workers abroad, claims across borders, shares of world output, and income from property.</p>
   </div>
 
   <section class="story wrap" id="concentration" data-lens="capital" data-nav="Concentration">
@@ -243,6 +243,19 @@
     <figure class="fig">
       <div class="chart" id="export-chart"></div>
       <figcaption>Corporate profits from the rest of the world, receipts less payments, as a percent of all corporate profits with inventory valuation and capital consumption adjustments, in years when all corporate profits were positive. Sources: BEA NIPA Table 1.12, line 13, less Table 6.16D, line 2.</figcaption>
+    </figure>
+    <h3 class="subhead" data-finding="affiliates">Workers abroad</h3>
+    <figure class="fig narrow">
+      <div class="chart" id="affiliates-chart"></div>
+      <figcaption>Employment by majority-owned foreign affiliates of U.S. multinational enterprises, millions, with their share of the enterprises’ worldwide employment in the tooltips. Preliminary estimates of each year. Source: BEA, Activities of U.S. Multinational Enterprises, news releases for 2016 to 2023.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="claims" data-lens="capital" data-nav="Foreign assets">
+    <header class="head"><p class="label">Foreign assets and debts</p><h2 data-finding="claims">Foreign assets and debts</h2><p class="dek" id="claims-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="claims-chart"></div>
+      <figcaption>Amounts outstanding at the end of each year, percent of GDP. U.S. claims on the rest of the world are the rest of the world’s total liabilities and equity; foreign claims on the U.S. are its total financial assets; U.S. direct investment abroad is equity at market value plus intercompany debt. Sources: Federal Reserve Financial Accounts Z.1, Table S.2.a, lines 106, 136, 152 and 158; BEA NIPA Table 1.1.5, line 1.</figcaption>
     </figure>
   </section>
 
@@ -429,7 +442,7 @@
   <div class="chapter wrap" id="ch-conflict" data-chapter="conflict">
     <p class="chapter-no">Part 9</p>
     <h2 class="chapter-title">Organization and conflict</h2>
-    <p class="chapter-dek">Unions, strikes, deaths at work, and money spent on lobbying.</p>
+    <p class="chapter-dek">Unions, right-to-work laws, strikes, deaths at work, and money spent on lobbying.</p>
   </div>
 
   <section class="story wrap" id="unions" data-lens="labor" data-nav="Unions">
@@ -442,6 +455,19 @@
       <div class="chart" id="members-chart"></div>
       <figcaption>Union members. 1897 to 1929: Historical Statistics D 940. 1930 to 1970: D 946.</figcaption>
     </figure>
+  </section>
+
+  <section class="story wrap" id="rtw" data-lens="labor state" data-nav="Right to work">
+    <header class="head"><p class="label">Right-to-work laws</p><h2 data-finding="rtw">Right-to-work laws</h2><p class="dek" id="rtw-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="rtw-chart"></div>
+      <figcaption>States with a right-to-work law in force at the end of each year: the laws in force today, by year enacted, and Michigan’s of 2012, repealed in 2023 with effect in 2024. Laws repealed before 2012 are not in the CRS table and are not counted. Sources: CRS report R42575, Table 1; Wisconsin, West Virginia, Kentucky and Michigan legislatures.</figcaption>
+    </figure>
+    <figure class="fig narrow">
+      <div class="chart" id="rtw-share-chart"></div>
+      <figcaption>Percent of the population at each census living in the states counted above. Sources: Census population change data, 1910 to 2020; the table below.</figcaption>
+    </figure>
+    <details class="hist"><summary>Table</summary><div class="scroll"><table id="rtw-table" class="data"></table></div></details>
   </section>
 
   <section class="story wrap" id="strikes" data-lens="labor" data-nav="Strikes">
@@ -498,7 +524,7 @@
   <div class="chapter wrap" id="ch-order" data-chapter="order">
     <p class="chapter-no">Part 10</p>
     <h2 class="chapter-title">Order and force</h2>
-    <p class="chapter-dek">Spending on force and on welfare, prisoners, removals, and the use of armed forces abroad.</p>
+    <p class="chapter-dek">Spending on force and on welfare, police, prisoners, removals and detention, armed forces abroad, and arms sold.</p>
   </div>
 
   <section class="story wrap" id="force" data-lens="state" data-nav="Force">
@@ -510,6 +536,14 @@
     <figure class="fig">
       <div class="chart" id="police-chart"></div>
       <figcaption>Police, law courts and prisons, percent of GDP. Source: BEA NIPA Table 3.16, lines 9, 11 and 12.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="police" data-lens="state" data-nav="Police">
+    <header class="head"><p class="label">Police and corrections</p><h2 data-finding="police">Police and corrections</h2><p class="dek" id="police-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="officers-chart"></div>
+      <figcaption id="officers-caption"></figcaption>
     </figure>
   </section>
 
@@ -529,12 +563,34 @@
     </figure>
   </section>
 
+  <section class="story wrap" id="detention" data-lens="state" data-nav="Detention">
+    <header class="head"><p class="label">Detention</p><h2 data-finding="detention">Detention</h2><p class="dek" id="detention-dek"></p></header>
+    <figure class="fig narrow">
+      <div class="chart" id="detention-chart"></div>
+      <figcaption>Average daily population held in ICE detention by fiscal year, October to September. Fiscal 2026 runs from October 2025 to July 20, 2026, the latest file ICE has posted, and is drawn lighter. Source: ICE detention statistics, fiscal years 2019 to 2026.</figcaption>
+    </figure>
+  </section>
+
   <section class="story wrap" id="deployments" data-lens="state" data-nav="Forces abroad">
     <header class="head"><p class="label">Forces abroad</p><h2 data-finding="deployments">Forces abroad</h2><p class="dek" id="deployments-dek"></p></header>
     <figure class="fig narrow">
       <div class="chart" id="deploy-chart"></div>
       <figcaption>Instances of use of U.S. armed forces abroad listed by the Congressional Research Service, by the decade each began, 1798 to April 2023. The list counts each entry, from landings to declared wars. Source: CRS report R42738.</figcaption>
     </figure>
+    <h3 class="subhead" data-finding="stationed">Stationed abroad</h3>
+    <figure class="fig">
+      <div class="chart" id="troops-chart"></div>
+      <figcaption id="troops-caption"></figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="arms" data-lens="state capital" data-nav="Arms">
+    <header class="head"><p class="label">Arms transfers</p><h2 data-finding="arms">Arms transfers</h2><p class="dek" id="arms-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="arms-chart"></div>
+      <figcaption>Arms transfer agreements with all recipients, 2008 to 2015 together, by supplier, current dollars. Other European is every European supplier not named; all others is every other supplier. Source: CRS report R44716, Table 30.</figcaption>
+    </figure>
+    <details class="hist"><summary>Table</summary><div class="scroll"><table id="arms-table" class="data"></table></div></details>
   </section>
 
   <div class="chapter wrap" id="ch-reference" data-chapter="reference">
