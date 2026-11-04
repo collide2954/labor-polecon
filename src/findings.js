@@ -1,10 +1,10 @@
 import { exact, pct, usd, wordy, cents } from './lib.js';
 import {
   series, accounts, workday, minWageYear, minutes, industryRate, classShares, reserveLayers, nationalIncome, federalReceipts, peak, deflate,
-  perThousand, WAGE_PRICES,
+  perThousand, WAGE_PRICES, percentOf, prisonRates, worldShares,
 } from './calc.js';
 import {
-  HIST, COAL, MIN_WAGE, TIMELINE, INDUSTRY_LABELS, SOURCES,
+  HIST, COAL, MIN_WAGE, TIMELINE, INDUSTRY_LABELS, SOURCES, POP, ORDER,
 } from './facts.js';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -211,6 +211,83 @@ const lobbying = (snap) => {
   return `Business groups here reported ${usd(total('business'))} in lobbying in ${l.year}; the unions here, ${usd(total('labor'))}`;
 };
 
+const exportOfCapital = (snap) => {
+  const all = series(snap, 'A051RC');
+  const dom = series(snap, 'A445RC');
+  const rows = [...all.keys()].filter((y) => dom.has(y)).sort((a, b) => a - b).map((y) => [y, (all.get(y) - dom.get(y)) / all.get(y)]);
+  const [y0, v0] = rows[0];
+  const [y1, v1] = rows.at(-1);
+  return `Corporate profits from the rest of the world: ${share(v0)} of all corporate profits in ${y0}, ${share(v1)} in ${y1}`;
+};
+
+const COUNTRY = { USA: 'U.S.', CHN: 'China', EUU: 'European Union', JPN: 'Japan', IND: 'India' };
+
+const world = (snap) => {
+  const s = worldShares(snap, 'NY.GDP.MKTP.CD');
+  const ends = (c) => [s[c][0], s[c].at(-1)];
+  const [[y0, u0], [y1, u1]] = ends('USA');
+  const [[, c0], [, c1]] = ends('CHN');
+  return `${COUNTRY.USA} share of world GDP: ${share(u0 / 100)} in ${y0}, ${share(u1 / 100)} in ${y1}. China: ${share(c0 / 100)} to ${share(c1 / 100)}`;
+};
+
+const rentier = (snap) => {
+  const [year, v] = percentOf(snap, ['A064RC', 'B703RC', 'A048RC'], 'A065RC').at(-1);
+  const pay = series(snap, 'A034RC').get(year) / series(snap, 'A065RC').get(year);
+  return `Interest, dividends and rent: ${share(v / 100)} of personal income in ${year}; wages and salaries: ${share(pay)}`;
+};
+
+const population = () => {
+  const rows = POP.census.rows;
+  return `Census count: ${exact(rows[0][1])} in ${rows[0][0]}, ${exact(rows.at(-1)[1])} in ${rows.at(-1)[0]}`;
+};
+
+const nativity = (snap) => {
+  const top = POP.nativity.rows.reduce((a, b) => (b[2] / b[1] > a[2] / a[1] ? b : a));
+  const [year, fb] = last(series(snap, 'LNU01073395'));
+  const nb = series(snap, 'LNU01073413').get(year);
+  return `Foreign born: ${share(top[2] / top[1])} of the population in ${top[0]}; ${share(fb / (fb + nb))} of the civilian labor force in ${year}`;
+};
+
+const poverty = (snap) => {
+  const at = (k) => snap.poverty[k].at(-1);
+  const [year, black] = at('Black Alone');
+  return `Below the poverty line in ${year}: ${black}% of Black people, ${at('Hispanic (any race)')[1]}% of Hispanic people, ${at('White Alone, Not Hispanic')[1]}% of non-Hispanic white people`;
+};
+
+const regions = () => {
+  const rows = POP.regions.rows;
+  const south = (r) => share(r[3] / r[5]);
+  return `The South: ${south(rows[0])} of the population in ${rows[0][0]}, ${south(rows.at(-1))} in ${rows.at(-1)[0]}`;
+};
+
+const force = (snap) => {
+  const rows = percentOf(snap, ['G16008'], 'A191RC');
+  const [y0, v0] = rows[0];
+  const [y1, v1] = rows.at(-1);
+  return `Public order and safety: ${share(v0 / 100)} of GDP in ${y0}, ${share(v1 / 100)} in ${y1}`;
+};
+
+const prisons = (snap) => {
+  const rows = prisonRates(snap, ORDER.prisonsEarly.rows);
+  const top = peak(rows, 'rate');
+  const now = rows.at(-1);
+  const r = (x) => `${Math.round(x.rate)} in ${x.year}`;
+  return `Sentenced prisoners per 100,000 residents: ${[rows[0], top, now].filter((x, i, a) => a.indexOf(x) === i).map(r).join(', ')}`;
+};
+
+const removals = () => {
+  const rows = ORDER.removals.rows;
+  const top = rows.reduce((a, b) => (b[1] > a[1] ? b : a));
+  const r = (x) => `${exact(x[1])} in ${x[0]}`;
+  return `Noncitizens removed: ${r(rows[0])}, ${r(top)}, ${r(rows.at(-1))}`;
+};
+
+const deployments = () => {
+  const rows = ORDER.deployments.rows;
+  const top = rows.reduce((a, b) => (b[1] > a[1] ? b : a));
+  return `Uses of U.S. armed forces abroad in the CRS list: ${rows[0][1]} in the ${rows[0][0]}s, ${top[1]} in the ${top[0]}s`;
+};
+
 const history = () => `${TIMELINE.length} events, ${TIMELINE[0].date.slice(0, 4)} to ${TIMELINE.at(-1).date.slice(0, 4)}`;
 
 export const findings = (snap) => ({
@@ -228,10 +305,17 @@ export const findings = (snap) => ({
   profit: profit(snap),
   concentration: concentration(snap),
   finance: finance(snap),
+  export: exportOfCapital(snap),
+  world: world(snap),
+  rentier: rentier(snap),
   unemployment: unemployment(snap),
   layers: layers(snap),
   duration: duration(snap),
   class: klass(snap),
+  population: population(),
+  nativity: nativity(snap),
+  poverty: poverty(snap),
+  regions: regions(),
   enslaved: enslaved(),
   income: income(snap),
   households: households(snap),
@@ -243,6 +327,10 @@ export const findings = (snap) => ({
   injury: injury(),
   fatal: fatal(snap),
   lobbying: lobbying(snap),
+  force: force(snap),
+  prisons: prisons(snap),
+  removals: removals(),
+  deployments: deployments(),
   history: history(),
 });
 
