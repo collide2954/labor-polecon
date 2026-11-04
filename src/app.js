@@ -998,7 +998,9 @@ const renderSources = () => {
     'Every number on this page, as of ', day, ', is in ', h('a', { href: 'snapshot.json', download: '' }, 'snapshot.json'),
     '. The code and the weekly rebuild are on ', ext(REPO, 'GitHub'),
     `. Cite as: Labor & Capital in Numbers, snapshot of ${day}. ${SITE}`);
-  fill('#foot', `Built from public BLS, BEA, Census, Federal Reserve, MSHA and lobbying disclosure data. Snapshot ${snapshot.generated.slice(0, 16).replace('T', ' ')} UTC. Not an official government site.`);
+  fill('#foot',
+    h('p', {}, `Built from public BLS, BEA, Census, Federal Reserve, MSHA and lobbying disclosure data. Snapshot ${snapshot.generated.slice(0, 16).replace('T', ' ')} UTC. Not an official government site.`),
+    h('p', { class: 'made' }, 'Made by a person, with help from AI tools. Every line, chart and figure was reviewed before publishing; the numbers now refresh on their own each Sunday.'));
 };
 
 const SEARCHABLE = [
