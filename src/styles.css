@@ -981,6 +981,10 @@ table.data {
   fill: var(--ink);
 }
 
+.chart .line.faint {
+  opacity: 0.45;
+}
+
 .timeline .ev-war {
   fill: var(--s1);
   stroke: var(--s1);
