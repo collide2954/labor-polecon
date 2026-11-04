@@ -89,7 +89,7 @@ test('findings state each section as a number', () => {
   assert.equal(f.concentration, '3 firms with 10,000 or more employees employ 29.9% of private-sector workers, 2023');
   assert.equal(f.finance, 'Financial corporations: 25% of domestic corporate profits, 2025');
   assert.equal(f.unemployment, 'Unemployment: 24.9% in 1933, 4% in September 2026');
-  assert.equal(f.layers, '13.86 million people unemployed, part time for economic reasons or marginally attached, 2025');
+  assert.equal(f.layers, '13.9 million people unemployed, part time for economic reasons or marginally attached, 2025');
   assert.equal(f.duration, '23.2% of the unemployed had looked for work for 27 weeks or more, 2025');
   assert.equal(f.class, '93.9% of the employed work for wages or salaries, against 78.6% in 1948');
   assert.equal(f.enslaved, '1860: 2,340,000 of 11,110,000 workers, 21.1%, were enslaved');

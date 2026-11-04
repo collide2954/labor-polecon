@@ -107,3 +107,12 @@ test('every historical table names its series and source', () => {
     assert.deepEqual(years, [...years].sort((a, b) => a - b), key);
   }
 });
+
+test('every BEA sector in the snapshot has a short label', async () => {
+  const { INDUSTRY_LABELS } = await import('../../src/facts.js');
+  const { default: snapshot } = await import('../../src/snapshot.js');
+  for (const r of snapshot.industries.rows.filter((x) => x.depth === 1)) {
+    assert.ok(INDUSTRY_LABELS[r.label], r.label);
+    assert.ok(INDUSTRY_LABELS[r.label].length <= 28, r.label);
+  }
+});
