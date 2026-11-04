@@ -260,6 +260,16 @@ export const parseZ1 = (buffer, file, codes) => {
   return out;
 };
 
+export const parseWorldBank = (json) => {
+  const out = {};
+  for (const r of json[1] ?? []) {
+    if (r.value === null) continue;
+    ((out[r.indicator.id] ??= {})[r.countryiso3code] ??= []).push([Number(r.date), r.value]);
+  }
+  for (const byCountry of Object.values(out)) for (const list of Object.values(byCountry)) list.sort((a, b) => a[0] - b[0]);
+  return out;
+};
+
 export const lobbyingDollars = (filings) => {
   const byPeriod = new Map();
   for (const f of filings) {
