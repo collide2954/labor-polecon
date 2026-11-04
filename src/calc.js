@@ -1,32 +1,93 @@
+import { PRODUCTIVE, INDUSTRY_SERIES } from './queries.js';
+
 export const series = (snap, id) => {
-  const pairs = snap.bls?.[id]?.annual ?? snap.nipa?.[id]?.years ?? snap.fixed?.[id]?.years ?? [];
+  const pairs = snap.bls?.[id]?.annual ?? snap.nipa?.[id]?.years ?? snap.fixed?.[id]?.years ?? snap.z1?.[id]?.years ?? [];
   return new Map(pairs);
+};
+
+export const WEEK = 365.25 / 7;
+
+const yearly = (weekly) => (weekly * WEEK) / 1000;
+
+const total = (snap, ids, year) => {
+  const values = ids.map((id) => series(snap, id).get(year));
+  return values.every((v) => v !== undefined && v !== null) ? values.reduce((a, b) => a + b, 0) : null;
+};
+
+const productivePayroll = (snap) => {
+  const all = series(snap, PRODUCTIVE.total);
+  const out = new Map();
+  for (const [year, v] of all) {
+    const less = total(snap, PRODUCTIVE.less, year);
+    if (less !== null) out.set(year, yearly(v - less));
+  }
+  return out;
+};
+
+const wagesOutsideFinance = (snap) => {
+  const exact = (y) => total(snap, ['A4103C'], y) - total(snap, ['N4159C', 'N4164C'], y);
+  const rough = (y) => total(snap, ['A132RC'], y) - (total(snap, ['A443RC'], y) - total(snap, ['B461RC'], y));
+  const naics = [...series(snap, 'A4103C').keys()].filter((y) => total(snap, ['N4159C', 'N4164C'], y) !== null);
+  const first = Math.min(...naics);
+  const scale = exact(first) / rough(first);
+  const out = new Map();
+  for (const year of series(snap, 'A132RC').keys()) {
+    if (naics.includes(year)) out.set(year, exact(year));
+    else if (total(snap, ['A443RC', 'B461RC'], year) !== null) out.set(year, rough(year) * scale);
+  }
+  return out;
+};
+
+export const productiveShare = (snap) => {
+  const pay = productivePayroll(snap);
+  const wages = wagesOutsideFinance(snap);
+  return new Map([...pay].filter(([y]) => wages.get(y)).map(([y, v]) => [y, v / wages.get(y)]));
 };
 
 const PARTS = { taxesProd: 'W325RC', interest: 'B471RC', transfers: 'W327RC', profitTax: 'B465RC', dividends: 'B467RC', retained: 'W332RC' };
 
 export const accounts = (snap) => {
   const nva = series(snap, 'A457RC');
-  const v = series(snap, 'A460RC');
-  const wages = series(snap, 'B461RC');
-  const stock = series(snap, 'k1pnofi2es00');
+  const comp = series(snap, 'A460RC');
+  const fixed = series(snap, 'k1pnofi2es00');
+  const stock = series(snap, 'LM105020015');
+  const share = productiveShare(snap);
   const parts = Object.fromEntries(Object.entries(PARTS).map(([k, code]) => [k, series(snap, code)]));
-  return [...nva.keys()].filter((year) => v.has(year)).map((year) => {
-    const s = nva.get(year) - v.get(year);
-    const C = stock.get(year - 1) ?? null;
+  return [...nva.keys()].filter((year) => comp.has(year) && share.has(year)).map((year) => {
+    const v = comp.get(year) * share.get(year);
+    const s = nva.get(year) - v;
+    const f = fixed.get(year - 1) ?? null;
+    const i = stock.get(year - 1) ?? null;
+    const C = f !== null && i !== null ? f + i : null;
     return {
       year,
       nva: nva.get(year),
-      v: v.get(year),
-      wages: wages.get(year) ?? null,
+      comp: comp.get(year),
+      share: share.get(year),
+      v,
       s,
-      rate: s / v.get(year),
+      rate: s / v,
+      fixed: f,
+      stock: i,
       C,
-      composition: C ? C / v.get(year) : null,
+      composition: C ? C / v : null,
       profit: C ? s / C : null,
-      parts: Object.fromEntries(Object.entries(parts).map(([k, m]) => [k, m.get(year) ?? null])),
+      parts: { otherPay: comp.get(year) - v, ...Object.fromEntries(Object.entries(parts).map(([k, m]) => [k, m.get(year) ?? null])) },
     };
   });
+};
+
+export const industryRate = (snap, row, year) => {
+  const m = INDUSTRY_SERIES[row.label];
+  const i = snap.industries?.years.indexOf(year) ?? -1;
+  if (!m || i < 0) return null;
+  const payroll = series(snap, m.payroll).get(year);
+  const wages = total(snap, m.wages, year);
+  const depreciation = total(snap, m.depreciation, year);
+  if (payroll === undefined || wages === null || depreciation === null || !row.comp[i]) return null;
+  const v = row.comp[i] * (yearly(payroll) / wages);
+  const s = row.comp[i] + row.taxes[i] + row.gos[i] - depreciation - v;
+  return { v, s, rate: s / v, depreciation };
 };
 
 export const workday = (hours, rate) => {
@@ -36,8 +97,10 @@ export const workday = (hours, rate) => {
 
 export const deflate = (value, cpiThen, cpiNow) => value * (cpiNow / cpiThen);
 
+export const WAGE_PRICES = 'CWUR0000SA0';
+
 export const cpiIn = (snap, year, value, to) => {
-  const cpi = series(snap, 'CUUR0000SA0');
+  const cpi = series(snap, WAGE_PRICES);
   const last = to ?? Math.max(...cpi.keys());
   return deflate(value, cpi.get(year), cpi.get(last));
 };
@@ -64,12 +127,6 @@ export const minWageYear = (steps, year) => {
 };
 
 export const minutes = (price, wage) => (wage > 0 ? (price / wage) * 60 : null);
-
-export const industrySurplus = (row, i) => {
-  const comp = row.comp[i];
-  if (!comp) return null;
-  return (row.taxes[i] + row.gos[i]) / comp;
-};
 
 const sum = (snap, ids, year) => ids.reduce((n, id) => n + (series(snap, id).get(year) ?? 0), 0);
 
@@ -115,9 +172,17 @@ const split = (snap, totalCode, parts) => {
   });
 };
 
-export const nationalIncome = (snap) => split(snap, 'A032RC', [
-  ['comp', 'A033RC'], ['proprietors', 'A041RC'], ['rent', 'A048RC'], ['profits', 'A051RC'], ['interest', 'W255RC'], ['taxes', 'W056RC'],
-]);
+export const nationalIncome = (snap) => {
+  const payroll = series(snap, PRODUCTIVE.total);
+  const comp = series(snap, 'A033RC');
+  const wages = series(snap, 'A034RC');
+  return split(snap, 'A032RC', [
+    ['comp', 'A033RC'], ['proprietors', 'A041RC'], ['rent', 'A048RC'], ['profits', 'A051RC'], ['interest', 'W255RC'], ['taxes', 'W056RC'],
+  ]).map((r) => {
+    const pay = payroll.get(r.year);
+    return { ...r, workers: pay !== undefined && wages.get(r.year) ? (yearly(pay) * (comp.get(r.year) / wages.get(r.year))) / r.total : null };
+  });
+};
 
 export const federalReceipts = (snap) => split(snap, 'W005RC', [
   ['personal', 'A074RC'], ['social', 'W780RC'], ['corporate', 'B075RC'], ['production', 'W007RC'],

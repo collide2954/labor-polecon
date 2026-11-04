@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  accounts, workday, deflate, minWageYear, minutes, industrySurplus, classShares, reserveLayers, perThousand, shares,
+  accounts, workday, deflate, minWageYear, minutes, classShares, reserveLayers, perThousand, shares,
   nationalIncome, federalReceipts, peak, series, cpiIn, ratioSeries, productiveShare, industryRate, WEEK,
 } from '../../src/calc.js';
 
@@ -144,13 +144,6 @@ test('minWageYear averages each rate over the days it was in effect', () => {
 test('minutes converts a price into minutes of work at an hourly wage', () => {
   assert.equal(minutes(4.5, 30), 9);
   assert.equal(minutes(1, 0), null);
-});
-
-test('industrySurplus is value added less compensation per dollar of compensation', () => {
-  const row = { comp: [2, 4], taxes: [1, 1], gos: [5, 7] };
-  assert.equal(industrySurplus(row, 0), 3);
-  assert.equal(industrySurplus(row, 1), 2);
-  assert.equal(industrySurplus({ comp: [0], taxes: [0], gos: [1] }, 0), null);
 });
 
 test('classShares splits the employed by class of worker', () => {
