@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labor &amp; Capital in Numbers</title>
+<meta name="description" content="Hours, wages, surplus value, profit, unemployment, wealth, unions and strikes in the United States, from BLS, BEA, Census and Federal Reserve data. Rebuilt weekly.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Labor &amp; Capital in Numbers">
+<meta property="og:description" content="Hours, wages, surplus value, profit, unemployment, wealth, unions and strikes in the United States, from BLS, BEA, Census and Federal Reserve data. Rebuilt weekly.">
+<meta property="og:url" content="https://collide2954.github.io/labor-polecon/">
+<meta property="og:image" content="https://collide2954.github.io/labor-polecon/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Labor &amp; Capital in Numbers: hours, wages, surplus value, profit and strikes in the United States">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23f4f1ea'/%3E%3Crect x='6' y='8' width='20' height='16' fill='%231a1a1a'/%3E%3Crect x='19' y='8' width='7' height='16' fill='%23d93a1f'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&amp;family=Schibsted+Grotesk:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="src/styles.css">
+<script type="module" src="src/app.js"></script>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap mast">
+    <a class="wordmark" href="./">LABOR<i>/</i>CAPITAL <em>in numbers</em></a>
+    <p class="dateline" id="stamp"></p>
+    <div class="controls">
+      <label class="filter"><span class="sr">Filter lists on this page</span><input id="q" type="search" placeholder="Filter: pullman, 1937, wages" autocomplete="off"></label>
+      <button id="theme" type="button" class="textbtn" aria-label="Toggle dark mode">Dark</button>
+    </div>
+  </div>
+  <div class="wrap lensbar">
+    <span class="readas">Read as</span>
+    <div class="lenses" id="lenses" role="group" aria-label="Lens"></div>
+    <p class="lens-hint" id="lens-hint"></p>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Sections">
+  <div class="wrap" id="jump"></div>
+</nav>
+
+<main>
+  <section class="lede wrap" id="lede" aria-label="Headline numbers">
+    <p class="kicker">Labor and capital in the United States, counted</p>
+    <h1><span class="hero" data-hero="workers">0</span> <span class="hero-unit">people work for a wage or salary</span></h1>
+    <p class="standfirst" id="lede-text"></p>
+    <dl class="ticker" id="ticker"></dl>
+  </section>
+
+  <aside class="readme wrap" id="readme" aria-labelledby="readme-title">
+    <h2 class="readme-title" id="readme-title">How to read these numbers</h2>
+    <ul>
+      <li><b>Rebuilt weekly.</b> BLS, BEA, Census, Federal Reserve and lobbying figures are pulled from the agencies’ own files every Sunday. Tap a mark for its numbers.</li>
+      <li><b>Classical terms.</b> Surplus value is net value added less compensation of employees, for nonfinancial corporations. Each term’s definition and source line is in the table at the end.</li>
+      <li><b>Annual values.</b> Yearly figures are BLS annual averages and BEA annual totals. Where a single month is shown, it says so.</li>
+      <li><b>Latest-year dollars.</b> Where a chart says so, dollars from earlier years are restated in the latest full year’s prices with the CPI-U.</li>
+      <li><b>Fixed tables.</b> Tables marked Historical Statistics are typed from the 1975 Census volume, with its series numbers. They do not change.</li>
+      <li><b>Breaks in series.</b> Old and new series measure different things. They are drawn as separate lines and never joined.</li>
+      <li><b>Named groups only.</b> Lobbying totals cover the organizations listed, reporting their own lobbying. Firms they hire are not counted.</li>
+    </ul>
+  </aside>
+
+  <div class="chapter wrap" id="ch-day" data-chapter="day">
+    <p class="chapter-no">Part 1</p>
+    <h2 class="chapter-title">The working day</h2>
+    <p class="chapter-dek">How long the working week runs, and how it divides between wages and surplus.</p>
+  </div>
+
+  <section class="story wrap" id="hours" data-lens="labor" data-nav="Hours">
+    <header class="head"><p class="label">Hours</p><h2 data-finding="hours">Hours</h2><p class="dek" id="hours-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="hours-chart"></div>
+      <figcaption>Average weekly hours in manufacturing. 1890 to 1926: all workers (Historical Statistics D 765). 1909 to 1938: production workers (D 803). 1939 on: production and nonsupervisory employees (BLS CEU3000000007). Three definitions, three lines.</figcaption>
+    </figure>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="overtime-chart"></div>
+        <figcaption>Average weekly overtime hours of production workers in manufacturing. Source: BLS CEU3000000009.</figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="jobs-chart"></div>
+        <figcaption>People holding more than one job, percent of the employed. Source: BLS LNU02026620.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="story wrap" id="division" data-lens="capital" data-nav="Divided week">
+    <header class="head"><p class="label">The divided week</p><h2 data-finding="division">The divided week</h2><p class="dek" id="division-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="division-chart"></div>
+      <figcaption>The average manufacturing week split in the ratio of compensation to surplus value in nonfinancial corporations that year. Hours: Historical Statistics D 803 to 1938, BLS CEU3000000007 after. Ratio: BEA NIPA Table 1.14.</figcaption>
+    </figure>
+  </section>
+
+  <div class="chapter wrap" id="ch-surplus" data-chapter="surplus">
+    <p class="chapter-no">Part 2</p>
+    <h2 class="chapter-title">Surplus value</h2>
+    <p class="chapter-dek">Net value added split into wages and surplus, by year and by industry.</p>
+  </div>
+
+  <section class="story wrap" id="surplus" data-lens="capital" data-nav="Surplus">
+    <header class="head"><p class="label">Rate of surplus value</p><h2 data-finding="surplus">Rate of surplus value</h2><p class="dek" id="surplus-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="rate-chart"></div>
+      <figcaption>Surplus value per dollar of compensation of employees, nonfinancial corporate business. Surplus value is net value added (line 19) less compensation (line 20). Source: BEA NIPA Table 1.14.</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="chart" id="parts-chart"></div>
+      <figcaption>Where surplus value goes, percent of the total each year: taxes on production, net interest, business transfers, taxes on corporate income, dividends and undistributed profits. Source: BEA NIPA Table 1.14, lines 23 to 31.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="industries" data-lens="capital" data-nav="Industries">
+    <header class="head"><p class="label">By industry</p><h2 data-finding="industries">By industry</h2><p class="dek" id="industries-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="industry-chart"></div>
+      <figcaption id="industry-caption"></figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="productivity" data-lens="labor capital" data-nav="Output and pay">
+    <header class="head"><p class="label">Output and pay</p><h2 data-finding="productivity">Output and pay</h2><p class="dek" id="productivity-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="productivity-chart"></div>
+      <figcaption>Nonfarm business sector, indexes with the first year set to 100: output per hour worked, real hourly compensation, and the labor share of output. Source: BLS Productivity and Costs (PRS85006093, PRS85006153, PRS85006173).</figcaption>
+    </figure>
+  </section>
+
+  <div class="chapter wrap" id="ch-wages" data-chapter="wages">
+    <p class="chapter-no">Part 3</p>
+    <h2 class="chapter-title">Wages</h2>
+    <p class="chapter-dek">What an hour of work is paid, and what it buys.</p>
+  </div>
+
+  <section class="story wrap" id="wages" data-lens="labor" data-nav="Real wages">
+    <header class="head"><p class="label">Real wages</p><h2 data-finding="wages">Real wages</h2><p class="dek" id="wages-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="real-wage-chart"></div>
+      <figcaption id="real-wage-caption"></figcaption>
+    </figure>
+    <h3 class="subhead" data-finding="minimum">Minimum wage</h3>
+    <figure class="fig">
+      <div class="chart" id="minimum-chart"></div>
+      <figcaption id="minimum-caption"></figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="spread" data-lens="labor" data-nav="Spread">
+    <header class="head"><p class="label">Spread of earnings</p><h2 data-finding="spread">Spread of earnings</h2><p class="dek" id="spread-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="deciles-chart"></div>
+      <figcaption id="deciles-caption"></figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="multiples" id="groups-multiples"></div>
+      <figcaption>Median usual weekly earnings of full-time wage and salary workers, current dollars, each panel on its own scale. Source: BLS Weekly and Hourly Earnings.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="basket" data-lens="labor" data-nav="Basket">
+    <header class="head"><p class="label">Minutes of work</p><h2 data-finding="basket">Minutes of work</h2><p class="dek" id="basket-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="basket-chart"></div>
+      <figcaption id="basket-caption"></figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="canal" data-lens="labor" data-nav="1828–1926">
+    <header class="head"><p class="label">Before the bureau</p><h2 data-finding="canal">Before the bureau</h2><p class="dek" id="canal-dek"></p></header>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="erie-chart"></div>
+        <figcaption>Daily wage rates on the Erie Canal, current dollars. No common labor rate is given for 1867 and 1868. Source: Historical Statistics D 718–719.</figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="earnings-chart"></div>
+        <figcaption>Average annual earnings of wage earners in manufacturing, current dollars. Source: Historical Statistics D 781.</figcaption>
+      </figure>
+    </div>
+    <details class="hist"><summary>Tables</summary><div class="scroll"><table id="erie-table" class="data"></table></div><div class="scroll"><table id="earnings-table" class="data"></table></div></details>
+  </section>
+
+  <div class="chapter wrap" id="ch-accumulation" data-chapter="accumulation">
+    <p class="chapter-no">Part 4</p>
+    <h2 class="chapter-title">Accumulation</h2>
+    <p class="chapter-dek">Fixed capital set against wages, the rate of profit, and the size of firms.</p>
+  </div>
+
+  <section class="story wrap" id="composition" data-lens="capital" data-nav="Composition">
+    <header class="head"><p class="label">Composition of capital</p><h2 data-finding="composition">Composition of capital</h2><p class="dek" id="composition-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="composition-chart"></div>
+      <figcaption>Current-cost net stock of fixed assets of nonfinancial corporations at the end of the prior year, per dollar of that year’s compensation of employees. Sources: BEA Fixed Assets Table 6.1, line 4; NIPA Table 1.14, line 20.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="profit" data-lens="capital" data-nav="Profit">
+    <header class="head"><p class="label">Rate of profit</p><h2 data-finding="profit">Rate of profit</h2><p class="dek" id="profit-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="profit-chart"></div>
+      <figcaption>Surplus value of nonfinancial corporations as a percent of their net stock of fixed assets at the end of the prior year, current cost. Sources: BEA NIPA Table 1.14; Fixed Assets Table 6.1.</figcaption>
+    </figure>
+    <h3 class="subhead" data-finding="finance">Finance</h3>
+    <figure class="fig narrow">
+      <div class="chart" id="finance-chart"></div>
+      <figcaption>Financial corporations’ share of domestic corporate profits with inventory valuation and capital consumption adjustments. Source: BEA NIPA Table 6.16D.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="concentration" data-lens="capital" data-nav="Concentration">
+    <header class="head"><p class="label">Concentration</p><h2 data-finding="concentration">Concentration</h2><p class="dek" id="concentration-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="bigfirm-chart"></div>
+      <figcaption>Share of private-sector employment in firms with 10,000 or more employees, and their number. Source: Census Business Dynamics Statistics, firm size.</figcaption>
+    </figure>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="emp-waffle"></div>
+        <figcaption id="emp-caption"></figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="firm-waffle"></div>
+        <figcaption>Firms by number of employees, same year. Each square is 1%.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <div class="chapter wrap" id="ch-reserve" data-chapter="reserve">
+    <p class="chapter-no">Part 5</p>
+    <h2 class="chapter-title">The reserve army of labor</h2>
+    <p class="chapter-dek">Who is out of work, for how long, and who works for wages at all.</p>
+  </div>
+
+  <section class="story wrap" id="unemployment" data-lens="labor" data-nav="Unemployment">
+    <header class="head"><p class="label">Unemployment</p><h2 data-finding="unemployment">Unemployment</h2><p class="dek" id="unemployment-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="unemployment-chart"></div>
+      <figcaption>Unemployment rate, annual average. 1890 to 1947: persons 14 and over, Historical Statistics D 86. 1948 on: persons 16 and over, BLS LNU04000000. The latest year is shown when complete.</figcaption>
+    </figure>
+    <details class="hist"><summary>Table, 1890 to 1947</summary><div class="scroll"><table id="unemployment-table" class="data"></table></div></details>
+  </section>
+
+  <section class="story wrap" id="layers" data-lens="labor" data-nav="Layers">
+    <header class="head"><p class="label">Beyond the unemployment rate</p><h2 data-finding="layers">Beyond the unemployment rate</h2><p class="dek" id="layers-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="layers-chart"></div>
+      <figcaption>Thousands of people, annual averages: unemployed; employed part time for economic reasons; marginally attached to the labor force, split into discouraged workers and others. Source: BLS Current Population Survey.</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="chart" id="u-chart"></div>
+      <figcaption>The six BLS measures of labor underutilization, U-1 to U-6, not seasonally adjusted, annual averages. Source: BLS Employment Situation Table A-15.</figcaption>
+    </figure>
+    <h3 class="subhead" data-finding="duration">Duration</h3>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="duration-chart"></div>
+        <figcaption>Share of the unemployed out of work 27 weeks or more, and average weeks unemployed. Source: BLS LNU03008636, LNU03008275.</figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="openings-chart"></div>
+        <figcaption>Unemployed people per job opening, annual averages. Sources: BLS LNU03000000, JOLTS JTU000000000000000JOL.</figcaption>
+      </figure>
+    </div>
+    <figure class="fig">
+      <div class="chart" id="race-chart"></div>
+      <figcaption>Unemployment rate by race and Hispanic or Latino ethnicity, annual averages. Source: BLS Current Population Survey.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="class" data-lens="labor capital" data-nav="Wage labor">
+    <header class="head"><p class="label">Wage labor</p><h2 data-finding="class">Wage labor</h2><p class="dek" id="class-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="class-chart"></div>
+      <figcaption>The employed by class of worker, percent: wage and salary workers, unincorporated self-employed, and unpaid family workers, agriculture and nonagriculture combined. Source: BLS Current Population Survey.</figcaption>
+    </figure>
+    <h3 class="subhead" data-finding="enslaved">1800 to 1960</h3>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="enslaved-chart"></div>
+        <figcaption>Labor force aged 10 and over, thousands, with the enslaved share in red, 1800 to 1860. Source: Historical Statistics D 167–169.</figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="sector-chart"></div>
+        <figcaption>Employment in agriculture and in manufacturing, thousands, at each census year. Source: Historical Statistics D 170, D 174.</figcaption>
+      </figure>
+    </div>
+    <details class="hist"><summary>Table</summary><div class="scroll"><table id="laborforce-table" class="data"></table></div></details>
+  </section>
+
+  <div class="chapter wrap" id="ch-distribution" data-chapter="distribution">
+    <p class="chapter-no">Part 6</p>
+    <h2 class="chapter-title">Distribution</h2>
+    <p class="chapter-dek">How national income, household income, wealth and federal taxes divide.</p>
+  </div>
+
+  <section class="story wrap" id="income" data-lens="capital" data-nav="National income">
+    <header class="head"><p class="label">National income</p><h2 data-finding="income">National income</h2><p class="dek" id="income-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="ni-chart"></div>
+      <figcaption>National income by type, percent of the total each year. Other covers business transfer payments and the surplus of government enterprises. Source: BEA NIPA Table 1.12.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="households" data-lens="labor" data-nav="Households">
+    <header class="head"><p class="label">Household income</p><h2 data-finding="households">Household income</h2><p class="dek" id="households-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="quintile-chart"></div>
+      <figcaption>Share of aggregate household income received by each fifth of households. Source: Census, Current Population Survey, Historical Income Table H-2.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="wealth" data-lens="capital" data-nav="Wealth">
+    <header class="head"><p class="label">Wealth</p><h2 data-finding="wealth">Wealth</h2><p class="dek" id="wealth-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="wealth-chart"></div>
+      <figcaption>Share of household net worth by wealth percentile group, fourth quarter of each year and the latest quarter. Source: Federal Reserve Distributional Financial Accounts.</figcaption>
+    </figure>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="equity-waffle"></div>
+        <figcaption id="equity-caption"></figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="business-waffle"></div>
+        <figcaption>Unincorporated business equity by the same groups, same quarter. Each square is 1%.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="story wrap" id="taxes" data-lens="state" data-nav="Taxes">
+    <header class="head"><p class="label">Federal receipts</p><h2 data-finding="taxes">Federal receipts</h2><p class="dek" id="taxes-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="receipts-chart"></div>
+      <figcaption>Federal government current receipts by source, percent of the total each year. Source: BEA NIPA Table 3.2.</figcaption>
+    </figure>
+  </section>
+
+  <div class="chapter wrap" id="ch-conflict" data-chapter="conflict">
+    <p class="chapter-no">Part 7</p>
+    <h2 class="chapter-title">Organization and conflict</h2>
+    <p class="chapter-dek">Unions, strikes, deaths at work, and money spent on lobbying.</p>
+  </div>
+
+  <section class="story wrap" id="unions" data-lens="labor" data-nav="Unions">
+    <header class="head"><p class="label">Unions</p><h2 data-finding="unions">Unions</h2><p class="dek" id="unions-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="union-chart"></div>
+      <figcaption>Union membership rates. 1930 to 1970: members as percent of nonfarm employment, Historical Statistics D 951. 1983 on: members as percent of employed wage and salary workers, all, private sector and government, BLS Union Affiliation.</figcaption>
+    </figure>
+    <figure class="fig">
+      <div class="chart" id="members-chart"></div>
+      <figcaption>Union members, thousands. 1897 to 1929: Historical Statistics D 940. 1930 to 1970: D 946.</figcaption>
+    </figure>
+  </section>
+
+  <section class="story wrap" id="strikes" data-lens="labor" data-nav="Strikes">
+    <header class="head"><p class="label">Strikes</p><h2 data-finding="strikes">Strikes</h2><p class="dek" id="strikes-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="strikes-chart"></div>
+      <figcaption>Work stoppages involving 1,000 or more workers beginning in each year. Source: BLS WSU100.</figcaption>
+    </figure>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="idle-chart"></div>
+        <figcaption>Days idle in those stoppages, thousands. Source: BLS WSU001.</figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="old-strikes-chart"></div>
+        <figcaption>All work stoppages of any size, 1881 to 1970. No count for 1906 to 1913. Source: Historical Statistics D 970, D 977.</figcaption>
+      </figure>
+    </div>
+    <h3 class="subhead" data-finding="issues">Issues</h3>
+    <figure class="fig">
+      <div class="chart" id="issues-chart"></div>
+      <figcaption>Work stoppages by major issue, 1881 to 1905, stacked. Source: Historical Statistics D 977–980.</figcaption>
+    </figure>
+    <details class="hist"><summary>Tables, 1881 to 1970</summary><div class="scroll"><table id="issues-table" class="data"></table></div><div class="scroll"><table id="stoppages-table" class="data"></table></div></details>
+  </section>
+
+  <section class="story wrap" id="injury" data-lens="labor state" data-nav="Deaths">
+    <header class="head"><p class="label">Injury and death</p><h2 data-finding="injury">Injury and death</h2><p class="dek" id="injury-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="coal-chart"></div>
+      <figcaption>Deaths in coal mining per 1,000 miners employed. Office workers are counted among miners from 1973. Source: Mine Safety and Health Administration.</figcaption>
+    </figure>
+    <h3 class="subhead" data-finding="fatal">All work</h3>
+    <div class="pair">
+      <figure class="fig">
+        <div class="chart" id="cfoi-chart"></div>
+        <figcaption>Fatal work injuries, all sectors. BLS changed its coding in 2023, so 2023 on is a separate series. Sources: BLS FWU00X00000080N00, FAU00X00000080N00.</figcaption>
+      </figure>
+      <figure class="fig">
+        <div class="chart" id="soii-chart"></div>
+        <figcaption>Nonfatal injury and illness cases per 100 full-time workers, private industry. Source: BLS ISU00000000031100.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="story wrap" id="lobbying" data-lens="state" data-nav="Lobbying">
+    <header class="head"><p class="label">Lobbying</p><h2 data-finding="lobbying">Lobbying</h2><p class="dek" id="lobbying-dek"></p></header>
+    <figure class="fig">
+      <div class="chart" id="lobby-chart"></div>
+      <figcaption id="lobby-caption"></figcaption>
+    </figure>
+  </section>
+
+  <div class="chapter wrap" id="ch-reference" data-chapter="reference">
+    <p class="chapter-no">Part 8</p>
+    <h2 class="chapter-title">History and reference</h2>
+    <p class="chapter-dek">Dates, officeholders, every series by first year, and how to check the numbers yourself.</p>
+  </div>
+
+  <section class="story wrap" id="history" data-lens="state" data-nav="Timeline">
+    <header class="head"><p class="label">History</p><h2 data-finding="history">History</h2><p class="dek">Drag to pan, use the buttons or Ctrl and scroll to zoom. Tap a mark for details.</p></header>
+    <figure class="fig">
+      <div class="figtools">
+        <span id="timeline-range"></span>
+        <span class="eras" id="timeline-eras"></span>
+        <button type="button" id="zoom-out" aria-label="Zoom out">−</button>
+        <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+        <button type="button" id="zoom-reset">All</button>
+      </div>
+      <div class="chart timeline" id="timeline-svg"></div>
+      <p class="tl-detail" id="timeline-detail" aria-live="polite"></p>
+      <figcaption>Laws, court rulings, strikes, officeholders and agencies on one axis.</figcaption>
+    </figure>
+    <div class="chips" id="timeline-tags" role="group" aria-label="Filter events by topic"></div>
+    <ol class="events" id="timeline-list"></ol>
+  </section>
+
+  <section class="story wrap" id="series" data-nav="Series">
+    <header class="head"><p class="label">Series</p><h2 id="series-title">Series on this page, by first year</h2></header>
+    <div class="scroll"><table id="series-table" class="data"></table></div>
+  </section>
+
+  <section class="story wrap" id="records-section" data-nav="Records">
+    <header class="head"><p class="label">Record figures</p><h2>Highs, lows and firsts in the tables above</h2></header>
+    <button id="shuffle" type="button" class="textbtn">Pick one at random</button>
+    <ol class="oddities" id="records"></ol>
+  </section>
+
+  <section class="story wrap" id="decoder" data-nav="Decoder">
+    <header class="head"><p class="label">Series decoder</p><h2>What is CEU0500000008?</h2><p class="dek">Paste a BLS series ID, a BEA table or series code, a NAICS or SOC code, or an NLRB case number.</p></header>
+    <label class="decoder-input"><span class="sr">Identifier</span><input id="decoder-input" type="text" placeholder="CEU0500000008" autocomplete="off" spellcheck="false"></label>
+    <div id="decoder-out" class="decoded" aria-live="polite"></div>
+    <div class="chips" id="examples"></div>
+  </section>
+
+  <section class="story wrap" id="reference" data-nav="Terms">
+    <header class="head"><p class="label">Reference</p><h2>Terms, release cadences and survey codes</h2></header>
+    <div class="scroll"><table id="terms-table" class="data"></table></div>
+    <div class="scroll"><table id="cadence-table" class="data"></table></div>
+    <div class="scroll"><table id="survey-table" class="data"></table></div>
+  </section>
+
+  <section class="story wrap" id="sources" data-nav="Sources">
+    <header class="head"><p class="label">Sources</p><h2>Where every number comes from</h2><p class="dek" id="data-use"></p></header>
+    <div class="srcgroups" id="source-list"></div>
+  </section>
+</main>
+
+<footer class="wrap foot" id="foot"></footer>
+<div id="tip" class="tip" role="status" hidden></div>
+</body>
+</html>
