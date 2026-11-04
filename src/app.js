@@ -78,8 +78,8 @@ const renderLede = () => {
   const b = (text) => h('b', {}, text);
   const top1 = snapshot.wealth.quarters.at(-1)['Net worth'];
   fill('#lede-text',
-    `In ${LAST.year} nonfinancial corporations paid `, b(`${usd(LAST.v * 1e6)} in compensation`), ' out of ', b(`${usd(LAST.nva * 1e6)} of net value added`),
-    ', leaving ', b(`${usd(LAST.s * 1e6)} of surplus value`), ': ', b(`${Math.round(LAST.rate * 100)} cents for every dollar of wages`),
+    `In ${LAST.year} nonfinancial corporations paid `, b(`${usd(LAST.v * 1e6)} to production and nonsupervisory workers`), ' out of ', b(`${usd(LAST.nva * 1e6)} of net value added`),
+    ', leaving ', b(`${usd(LAST.s * 1e6)} of surplus value`), ': ', b(`${cents(LAST.rate)} for every dollar of variable capital`),
     `. The top 1% of households hold ${pct(top1.TopPt1 + top1.RemainingTop1)} of net worth; the bottom half hold ${pct(top1.Bottom50)}.`);
   const ue = snapshot.bls.LNU04000000.latest;
   const u6 = snapshot.bls.LNU03327709.latest;
@@ -277,7 +277,7 @@ const renderWages = () => {
     aria: 'Federal minimum wage, nominal and real',
     describe: (yr) => tipLines(cents(at(yr).real), `${yr}, in ${CPI_YEAR} dollars`, `${cents(at(yr).nominal)} at the time`, { href: SOURCES.minWage, text: 'Rate history' }),
   });
-  $('#minimum-caption').textContent = `Federal minimum wage for covered nonfarm workers, averaged over the days each rate was in effect, at the time and in ${CPI_YEAR} dollars. Sources: Wage and Hour Division rate history; BLS CPI-U.`;
+  $('#minimum-caption').textContent = `Federal minimum wage for covered nonfarm workers, averaged over the days each rate was in effect, at the time and in ${CPI_YEAR} dollars. Sources: Wage and Hour Division rate history; BLS CPI-W.`;
 };
 
 const GROUPS = [
