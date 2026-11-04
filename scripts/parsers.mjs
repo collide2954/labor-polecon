@@ -338,6 +338,42 @@ export const parsePrisoners = (rows) => rows
   .map((r) => [Number(r.YEAR), Number(r.JURGT1M) + Number(r.JURGT1F)])
   .sort((a, b) => a[0] - b[0]);
 
+const items = (node, out = []) => {
+  if (Array.isArray(node)) node.forEach((n) => items(n, out));
+  else if (node && typeof node === 'object') {
+    if (node.fileId && node.fileName) out.push(node);
+    Object.values(node).forEach((n) => items(n, out));
+  }
+  return out;
+};
+
+export const latestLocationReport = (page) => {
+  const stamp = (f) => Number(f.fileName.match(/Location_Report_(\d{4})/)?.[1] ?? -1);
+  const files = items(page).filter((f) => f.groupName === 'milRegionCountry' && stamp(f) >= 0);
+  const best = files.reduce((a, b) => (stamp(b) > stamp(a) ? b : a));
+  return { fileId: best.fileId, groupName: best.groupName, name: best.displayName.replace(/\(.*\)/, '').trim() };
+};
+
+export const parseLocationReport = (rows) => {
+  const asOf = rows.map((r) => String(r[0] ?? '').match(/^As of (.+)$/)?.[1]).find(Boolean) ?? null;
+  const head = rows.findIndex((r) => r.includes('ACTIVE DUTY'));
+  const start = rows[head].indexOf('ACTIVE DUTY');
+  const col = rows[head + 1].findIndex((c, i) => i >= start && c === 'TOTAL');
+  let section = null;
+  let home = null;
+  let overseas = null;
+  const countries = [];
+  for (const r of rows.slice(head + 2)) {
+    const lead = typeof r[0] === 'string' ? r[0].trim() : null;
+    if (lead === 'UNITED STATES TOTAL') home = num(r[col]);
+    else if (lead === 'OVERSEAS TOTAL') overseas = num(r[col]);
+    if (lead === 'UNITED STATES' || lead === 'OVERSEAS') section = lead;
+    if (lead && lead.endsWith('TOTAL')) section = null;
+    if (section === 'OVERSEAS' && typeof r[1] === 'string' && !r[1].startsWith('ZZ') && num(r[col]) > 0) countries.push([r[1].trim(), num(r[col])]);
+  }
+  return { asOf, home, overseas, countries: countries.sort((a, b) => b[1] - a[1]) };
+};
+
 export const lobbyingDollars = (filings) => {
   const byPeriod = new Map();
   for (const f of filings) {
