@@ -13,6 +13,7 @@ import {
   parseBds,
   parseDfa,
   parseIncomeShares,
+  parseZ1,
   lobbyingDollars,
   toModule,
 } from '../../scripts/parsers.mjs';
@@ -160,6 +161,16 @@ test('readXlsx returns every sheet as rows of cell values', () => {
     [],
     [null, 'Mining & quarrying', null],
   ]);
+});
+
+test('parseZ1 reads annual columns from one CSV in the release zip and skips ND', () => {
+  const Z1 = zip({
+    'csv/other.csv': 'date,LM105020015.A\n2025,1\n',
+    'csv/S11_1_i_a.csv': '"date","FU106902501.A","LM105020015.A"\n1945,5,ND\n1946,6,"39688"\n2025,7,3692639\n',
+  });
+  assert.deepEqual(parseZ1(Z1, 'csv/S11_1_i_a.csv', ['LM105020015.A', 'MISSING.A']), {
+    'LM105020015.A': [[1946, 39688], [2025, 3692639]],
+  });
 });
 
 test('parseValueAdded splits each industry into compensation, taxes and surplus', () => {
