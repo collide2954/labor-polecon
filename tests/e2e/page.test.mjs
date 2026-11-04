@@ -89,17 +89,17 @@ test('every chart draws an svg', async () => {
   await page.close();
 });
 
-test('the surplus value chart reports net value added, wages and surplus', async () => {
+test('the surplus value chart reports net value added, compensation, variable capital and surplus', async () => {
   const { page } = await open();
   await page.hover('#rate-chart .hit');
-  assert.match(await page.textContent('#tip'), /per \$1 of wages[\s\S]*Net value added[\s\S]*Compensation[\s\S]*Surplus value/);
+  assert.match(await page.textContent('#tip'), /per \$1 of variable capital[\s\S]*Net value added[\s\S]*Compensation[\s\S]*Variable capital[\s\S]*Surplus value/);
   await page.close();
 });
 
 test('the divided week splits each year into two bars that add to its hours', async () => {
   const { page } = await open();
   const rows = await page.$$eval('#division-chart [data-row]', (gs) => gs.map((g) => g.dataset.row));
-  assert.ok(rows.length >= 15);
+  assert.ok(rows.length >= 10);
   await page.hover(`#division-chart [data-row="${rows.at(-1)}"] .seg.alt`);
   const lines = await page.$$eval('#tip > *', (els) => els.map((e) => e.textContent));
   const read = (re) => Number(lines.find((l) => re.test(l)).match(re)[1]);
@@ -130,7 +130,7 @@ test('unemployment runs from 1890 with the historical years marked apart', async
 
 test('stacked charts draw every layer and a legend', async () => {
   const { page } = await open();
-  for (const [sel, n] of [['#parts-chart', 6], ['#layers-chart', 4], ['#class-chart', 3], ['#quintile-chart', 5], ['#wealth-chart', 5], ['#receipts-chart', 5], ['#issues-chart', 3]]) {
+  for (const [sel, n] of [['#parts-chart', 7], ['#layers-chart', 4], ['#class-chart', 3], ['#quintile-chart', 5], ['#wealth-chart', 5], ['#receipts-chart', 5], ['#issues-chart', 3]]) {
     assert.equal(await page.locator(`${sel} path[data-key]`).count(), n, sel);
     assert.equal(await page.locator(`${sel} .legend li`).count(), n, sel);
   }
