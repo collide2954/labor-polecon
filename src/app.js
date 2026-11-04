@@ -812,7 +812,7 @@ const showDetail = (type, i) => {
   }
 };
 
-const ERAS = [[1800, 1865], [1865, 1935], [1935, 1980], [1980, 2027]];
+const ERAS = [[1795, 1865], [1865, 1935], [1935, 1980], [1980, 2027]];
 
 const renderTimeline = () => {
   tl = timeline({
@@ -820,7 +820,7 @@ const renderTimeline = () => {
     events: TIMELINE,
     people: PEOPLE,
     projects: AGENCIES,
-    limits: [1800, 2027],
+    limits: [1795, 2027],
     onSelect: showDetail,
     onRange: (d) => { $('#timeline-range').textContent = `${Math.round(d[0])}–${Math.round(d[1])}`; },
   });
