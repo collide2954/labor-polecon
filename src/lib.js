@@ -362,7 +362,7 @@ export const niceTicks = (max, count) => {
   const mag = 10 ** Math.floor(Math.log10(raw));
   const r = raw / mag;
   const step = (r <= 1 ? 1 : r <= 2 ? 2 : r <= 5 ? 5 : 10) * mag;
-  const top = Math.ceil(max / step - 1e-9) * step;
+  const top = Math.ceil(Number((max / step).toFixed(6))) * step;
   return Array.from({ length: Math.round(top / step) + 1 }, (_, i) => Number((i * step).toPrecision(12)));
 };
 
