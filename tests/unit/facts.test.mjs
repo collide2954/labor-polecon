@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, MIN_WAGE, COAL, HIST,
+  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, MIN_WAGE, COAL, HIST, POP, ORDER,
 } from '../../src/facts.js';
 import { identify } from '../../src/lib.js';
 
@@ -106,6 +106,21 @@ test('every historical table names its series and source', () => {
     const years = table.rows.map((r) => r[0]);
     assert.deepEqual(years, [...years].sort((a, b) => a - b), key);
   }
+});
+
+test('population and order tables name their source and run in year order', () => {
+  for (const [key, table] of Object.entries({ ...POP, ...ORDER })) {
+    assert.ok(table.title && table.columns.length >= 2 && SOURCES[table.src], key);
+    for (const row of table.rows) assert.equal(row.length, table.columns.length, `${key} ${row[0]}`);
+    const years = table.rows.map((r) => r[0]);
+    assert.deepEqual(years, [...years].sort((a, b) => a - b), key);
+  }
+  assert.deepEqual(POP.census.rows[0], [1790, 3929214, 757208, 697681]);
+  assert.deepEqual(POP.census.rows.find((r) => r[0] === 1860), [1860, 31443321, 4441830, 3953760]);
+  for (const [year, ne, mw, s, w, us] of POP.regions.rows) assert.equal(ne + mw + s + w, us, String(year));
+  assert.equal(ORDER.removals.rows[0][0], 1892);
+  assert.equal(ORDER.deployments.rows.reduce((n, r) => n + r[1], 0), 471);
+  assert.deepEqual(ORDER.prisonsEarly.rows.at(-1), [1977, 285456, 129]);
 });
 
 test('every BEA sector in the snapshot has a short label', async () => {

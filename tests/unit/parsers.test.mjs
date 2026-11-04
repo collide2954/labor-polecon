@@ -18,6 +18,7 @@ import {
   parsePovertyByRace,
   parseHomeownership,
   parseAgeSex,
+  parsePrisoners,
   lobbyingDollars,
   toModule,
 } from '../../scripts/parsers.mjs';
@@ -231,6 +232,16 @@ test('parseHomeownership averages the quarters of complete years', () => {
 test('parseAgeSex sums both sexes by single year of age for the latest estimate', () => {
   const csv = 'SEX,AGE,ESTIMATESBASE2020,POPESTIMATE2024,POPESTIMATE2025\n0,0,9,10,11\n0,1,9,20,21\n0,999,9,30,32\n1,0,4,5,6\n';
   assert.deepEqual(parseAgeSex(csv), { year: 2025, ages: [[0, 11], [1, 21]], total: 32 });
+});
+
+test('parsePrisoners sums sentenced prisoners of both sexes under U.S. jurisdiction', () => {
+  const rows = [
+    { YEAR: '1979', STATE: 'US', JURGT1M: '289465', JURGT1F: '12005' },
+    { YEAR: '1978', STATE: 'US', JURGT1M: '282813', JURGT1F: '11583' },
+    { YEAR: '1978', STATE: 'AK', JURGT1M: '468', JURGT1F: '22' },
+    { YEAR: '1980', STATE: 'US', JURGT1M: '-1', JURGT1F: '12331' },
+  ];
+  assert.deepEqual(parsePrisoners(rows), [[1978, 294396], [1979, 301470]]);
 });
 
 test('parseValueAdded splits each industry into compensation, taxes and surplus', () => {
