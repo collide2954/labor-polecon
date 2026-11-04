@@ -1,11 +1,11 @@
 import { writeFile } from 'node:fs/promises';
 import { retry } from '../src/lib.js';
 import {
-  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, LOBBY, DFA_MEASURES,
+  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, WORLD, LOBBY, DFA_MEASURES,
 } from '../src/queries.js';
 import {
   parseBlsText, annual, latest, parseBeaFlat, parseRegister, readXlsx, parseValueAdded, parseBds, parseDfa,
-  parseIncomeShares, parseZ1, lobbyingDollars, toModule,
+  parseIncomeShares, parseZ1, parseWorldBank, lobbyingDollars, toModule,
 } from './parsers.mjs';
 
 const OUT = new URL('../src/snapshot.js', import.meta.url);
@@ -71,6 +71,17 @@ const z1 = async () => {
     if (!data[code]) throw new Error(`Z.1 returned no data for ${code}`);
     return [code.replace(/\.A$/, ''), { years: data[code] }];
   }));
+};
+
+const world = async () => {
+  const out = {};
+  for (const ind of WORLD.indicators) {
+    step(`world bank ${ind.id}`);
+    const data = parseWorldBank(await get(WORLD.url(ind.id, WORLD.countries.map((c) => c.id)), 'json'))[ind.id];
+    if (!data?.USA || !data?.WLD) throw new Error(`World Bank returned no data for ${ind.id}`);
+    out[ind.id] = data;
+  }
+  return out;
 };
 
 const industries = async () => {
@@ -143,6 +154,7 @@ const SECTIONS = {
   nipa: () => nipa(),
   fixed: () => fixed(),
   z1: () => z1(),
+  world: () => world(),
   industries: () => industries(),
   firms: () => firms(),
   income: () => income(),
