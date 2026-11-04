@@ -47,10 +47,13 @@ const CHAPTERS = {
   day: ['hours', 'division'],
   surplus: ['surplus', 'industries', 'productivity'],
   wages: ['wages', 'spread', 'basket', 'canal'],
-  accumulation: ['composition', 'profit', 'concentration'],
+  accumulation: ['composition', 'profit'],
+  monopoly: ['concentration', 'finance', 'export', 'world', 'rentier'],
   reserve: ['unemployment', 'layers', 'class'],
+  population: ['population', 'nativity', 'poverty', 'regions'],
   distribution: ['income', 'households', 'wealth', 'taxes'],
   conflict: ['unions', 'strikes', 'injury', 'lobbying'],
+  order: ['force', 'prisons', 'removals', 'deployments'],
   reference: ['history', 'series', 'records-section', 'decoder', 'reference', 'sources'],
 };
 
@@ -416,7 +419,7 @@ test('sections sit in eight parts with a reading guide up front', async () => {
   });
   assert.deepEqual(layout, CHAPTERS);
   assert.ok(await page.locator('#readme li').count() >= 6);
-  assert.equal(await page.locator('#jump a.jump-ch').count(), 8);
+  assert.equal(await page.locator('#jump a.jump-ch').count(), 11);
   await page.close();
 });
 
