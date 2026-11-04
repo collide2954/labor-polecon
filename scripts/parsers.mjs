@@ -333,6 +333,11 @@ export const parseAgeSex = (text) => {
   };
 };
 
+export const parsePrisoners = (rows) => rows
+  .filter((r) => r.STATE === 'US' && Number(r.JURGT1M) >= 0 && Number(r.JURGT1F) >= 0)
+  .map((r) => [Number(r.YEAR), Number(r.JURGT1M) + Number(r.JURGT1F)])
+  .sort((a, b) => a[0] - b[0]);
+
 export const lobbyingDollars = (filings) => {
   const byPeriod = new Map();
   for (const f of filings) {
