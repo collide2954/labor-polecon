@@ -19,6 +19,8 @@ import {
   parseHomeownership,
   parseAgeSex,
   parsePrisoners,
+  latestLocationReport,
+  parseLocationReport,
   lobbyingDollars,
   toModule,
 } from '../../scripts/parsers.mjs';
@@ -242,6 +244,33 @@ test('parsePrisoners sums sentenced prisoners of both sexes under U.S. jurisdict
     { YEAR: '1980', STATE: 'US', JURGT1M: '-1', JURGT1F: '12331' },
   ];
   assert.deepEqual(parsePrisoners(rows), [[1978, 294396], [1979, 301470]]);
+});
+
+test('latestLocationReport picks the newest location country file from the DMDC page listing', () => {
+  const page = { data: { pageItemList: [{ children: [
+    { displayName: ' March 2026', fileName: 'DMDC_Website_Location_Report_2603.xlsx', fileId: 142879, groupName: 'milRegionCountry' },
+    { displayName: ' August 2026', fileName: 'DMDC_Website_Location_Report_2608.xlsx', fileId: 143782, groupName: 'milRegionCountry' },
+    { displayName: 'Other', fileName: 'rg2309.pdf', fileId: 999999, groupName: 'milRankGrade' },
+  ] }] } };
+  assert.deepEqual(latestLocationReport(page), { fileId: 143782, groupName: 'milRegionCountry', name: 'August 2026' });
+});
+
+test('parseLocationReport reads active-duty totals at home, overseas and by country', () => {
+  const rows = [
+    ['Number of Military and DoD Appropriated Fund (APF) Civilian Personnel'],
+    ['As of August 31, 2026'],
+    ['LOCATION', 'DUTY STATE / COUNTRY', 'ACTIVE DUTY', null, null, 'NATIONAL GUARD / RESERVE'],
+    [null, null, 'ARMY', 'NAVY', 'TOTAL', 'ARMY NATIONAL GUARD', 'TOTAL'],
+    ['UNITED STATES', 'ALABAMA', 10, 5, 15, 7, 7],
+    ['UNITED STATES TOTAL', null, 100, 50, 150, 70, 70],
+    ['OVERSEAS', 'GERMANY', 20, 3, 23, 1, 1],
+    [null, 'JAPAN', 5, 30, 35, 0, 0],
+    [null, 'ANTARCTICA', 0, 0, 0, 0, 0],
+    ['OVERSEAS TOTAL', null, 25, 33, 58, 1, 1],
+  ];
+  assert.deepEqual(parseLocationReport(rows), {
+    asOf: 'August 31, 2026', home: 150, overseas: 58, countries: [['JAPAN', 35], ['GERMANY', 23]],
+  });
 });
 
 test('parseValueAdded splits each industry into compensation, taxes and surplus', () => {

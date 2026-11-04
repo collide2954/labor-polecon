@@ -67,8 +67,8 @@ test('productive payrolls and industry maps point at known series', async () => 
   }
   for (const code of ['A132RC', 'A443RC', 'A4103C', 'N4159C', 'N4164C']) assert.ok(NIPA[code], code);
   assert.ok(has('CWUR0000SA0'));
-  assert.equal(Z1.file, 'csv/S11_1_i_a.csv');
-  assert.ok(Z1.codes.includes('LM105020015.A'));
+  assert.ok(Z1.files['csv/S11_1_i_a.csv'].includes('LM105020015.A'));
+  for (const code of ['FL264090005.A', 'FL264194005.A', 'LM263192101.A', 'FL263192305.A']) assert.ok(Z1.files['csv/S2_i_a.csv'].includes(code), code);
 });
 
 test('world, force and income series are named', async () => {
@@ -78,4 +78,10 @@ test('world, force and income series are named', async () => {
   for (const code of ['A191RC', 'W022RC', 'G16007', 'G16008', 'G16009', 'G16011', 'G16012', 'G16034', 'G16027', 'G16029', 'W160RC', 'B3375C', 'A2067C', 'B3475C', 'W161RC', 'A048RC', 'A065RC']) {
     assert.ok(NIPA[code], code);
   }
+});
+
+test('troop locations come from the DMDC report listing', async () => {
+  const { TROOPS } = await import('../../src/queries.js');
+  assert.match(TROOPS.page, /^https:\/\/dwp\.dmdc\.osd\.mil\/dwp\/api\/page\?pageId=\d+$/);
+  assert.equal(TROOPS.file(5, 'milRegionCountry'), 'https://dwp.dmdc.osd.mil/dwp/api/downloadZ?fileId=5&groupName=milRegionCountry');
 });
