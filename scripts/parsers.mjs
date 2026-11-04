@@ -249,6 +249,17 @@ export const parseIncomeShares = (rows) => {
   return [...seen.values()].sort((a, b) => a.year - b.year);
 };
 
+export const parseZ1 = (buffer, file, codes) => {
+  const [head, ...rows] = unzip(buffer)[file].toString('utf8').trim().split(/\r?\n/).map(splitCsv);
+  const out = {};
+  for (const code of codes) {
+    const k = head.indexOf(code);
+    if (k < 0) continue;
+    out[code] = rows.map((r) => [Number(r[0]), num(r[k])]).filter(([y, v]) => Number.isInteger(y) && v !== null);
+  }
+  return out;
+};
+
 export const lobbyingDollars = (filings) => {
   const byPeriod = new Map();
   for (const f of filings) {
