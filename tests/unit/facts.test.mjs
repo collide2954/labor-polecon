@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, MIN_WAGE, COAL, HIST, POP, ORDER,
+  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, MIN_WAGE, COAL, HIST, POP, ORDER, ABROAD,
 } from '../../src/facts.js';
 import { identify } from '../../src/lib.js';
 
@@ -110,7 +110,7 @@ test('every historical table names its series and source', () => {
 });
 
 test('population and order tables name their source and run in year order', () => {
-  for (const [key, table] of Object.entries({ ...POP, ...ORDER })) {
+  for (const [key, table] of Object.entries({ ...POP, ...ORDER, ...ABROAD })) {
     assert.ok(table.title && table.columns.length >= 2 && SOURCES[table.src], key);
     for (const row of table.rows) assert.equal(row.length, table.columns.length, `${key} ${row[0]}`);
     const years = table.rows.map((r) => r[0]);
@@ -122,6 +122,10 @@ test('population and order tables name their source and run in year order', () =
   assert.equal(ORDER.removals.rows[0][0], 1892);
   assert.equal(ORDER.deployments.rows.reduce((n, r) => n + r[1], 0), 471);
   assert.deepEqual(ORDER.prisonsEarly.rows.at(-1), [1977, 285456, 129]);
+  assert.equal(ORDER.rightToWork.rows.length, 27);
+  assert.equal(ORDER.rightToWork.rows.filter((r) => r[2] === null).length, 26);
+  for (const r of ABROAD.arms.rows) assert.equal(r.slice(1, -1).reduce((a, b) => a + b, 0), r.at(-1), String(r[0]));
+  assert.ok(ORDER.police.rows.every((r) => r[1] > 400000 && r[2] > 150000));
 });
 
 test('every BEA sector in the snapshot has a short label', async () => {
