@@ -13,7 +13,6 @@ import {
   parseBds,
   parseDfa,
   parseIncomeShares,
-  parseMsha,
   lobbyingDollars,
   toModule,
 } from '../../scripts/parsers.mjs';
@@ -68,6 +67,11 @@ test('parseBlsText reads CPS blocks whose value column is called Estimate', () =
   const out = parseBlsText('<PRE>Series Id:          LNU04000000\n\nNot Seasonally Adjusted\nSeries title:       (Unadj) Unemployment Rate\n\nSeries id,Year,Period,Estimate\nLNU04000000,1947,M13,3.9\nLNU04000000,1948,M01,4.0\n</PRE>');
   assert.equal(out.LNU04000000.title, '(Unadj) Unemployment Rate');
   assert.deepEqual(out.LNU04000000.rows.map((r) => r.value), [3.9, 4]);
+});
+
+test('parseBlsText titles a block from its catalog lines when it has no title', () => {
+  const out = parseBlsText('<PRE>Series Id: PRS85006093\nSector:    Nonfarm Business\nMeasure:   Labor productivity (output per hour)\nDuration:  Index (2017=100)\nBase Year: 2017\n\n\nSeries Id,Year,Period,Value\nPRS85006093,2024,Q05,115.366\n</PRE>');
+  assert.equal(out.PRS85006093.title, 'Nonfarm Business, Labor productivity (output per hour), Index (2017=100), 2017');
 });
 
 test('annual prefers published annual values and averages complete years otherwise', () => {
@@ -218,16 +222,6 @@ test('parseIncomeShares reads one row per year and drops footnote marks', () => 
     { year: 1967, shares: [4, 10.8, 17.3, 24.2, 43.6], top5: 17.2 },
     { year: 2017, shares: [3.1, 8.2, 14.3, 23, 51.5], top5: 22.3 },
     { year: 2025, shares: [3, 8.2, 13.9, 22.5, 52.4], top5: 23.5 },
-  ]);
-});
-
-test('parseMsha reads both halves of the coal fatality table', () => {
-  const html = '<table><tr><th>Most Recent Years</th><th>Earlier Years</th></tr><tr><td>Year</td><td>Miners</td><td>Fatalities</td><td>Year</td><td>Miners</td><td>Fatalities</td></tr><tr><td>2025</td><td>62,246</td><td>8</td><td>1962</td><td>161,286</td><td>289</td></tr><tr><td>1963</td><td>157,126</td><td>284</td><td>1900</td><td>448,581</td><td>1,489</td></tr></table>';
-  assert.deepEqual(parseMsha(html), [
-    { year: 1900, miners: 448581, deaths: 1489 },
-    { year: 1962, miners: 161286, deaths: 289 },
-    { year: 1963, miners: 157126, deaths: 284 },
-    { year: 2025, miners: 62246, deaths: 8 },
   ]);
 });
 
