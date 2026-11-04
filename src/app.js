@@ -1,6 +1,6 @@
 import snapshot from './snapshot.js';
 import {
-  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, COAL, HIST, INDUSTRY_LABELS,
+  SOURCES, SOURCE_TITLES, SOURCE_GROUPS, TIMELINE, TAGS, PEOPLE, AGENCIES, EXAMPLES, CADENCES, TERMS, COAL, HIST,
 } from './facts.js';
 import {
   exact, compact, pct, usd, cents, identify, matches, filterTimeline, sortRows, LENSES, readLens, inLens, lensSearch, yearOf,
@@ -9,9 +9,11 @@ import {
 import {
   PRICES, LOBBY, DFA_GROUPS, BLS_SERIES, NIPA, FIXED,
 } from './queries.js';
-import { findings, realMinimum, records } from './findings.js';
 import {
-  series, accounts, workday, minutes, industrySurplus, classShares, reserveLayers, nationalIncome, federalReceipts, perThousand, deflate, peak,
+  findings, realMinimum, realEarnings, industryRates, records,
+} from './findings.js';
+import {
+  series, accounts, workday, minutes, classShares, reserveLayers, nationalIncome, federalReceipts, perThousand, deflate, peak, WAGE_PRICES,
 } from './calc.js';
 import {
   columns, dotplot, stackedArea, miniArea, waffle, lines, timeline, observeFigures, countUp, tipLines, dumbbell, splitBars,
@@ -57,7 +59,7 @@ const dollars = (v) => `$${exact(v)}`;
 const F = findings(snapshot);
 const ACC = accounts(snapshot);
 const LAST = ACC.at(-1);
-const CPI = series(snapshot, 'CUUR0000SA0');
+const CPI = series(snapshot, WAGE_PRICES);
 const [CPI_YEAR, CPI_NOW] = lastOf(CPI);
 const real = (value, year) => deflate(value, CPI.get(year), CPI_NOW);
 
@@ -156,11 +158,12 @@ const renderDivision = () => {
     rows,
     labels: ['Hours matching wages', 'Hours matching surplus value'],
     aria: 'The manufacturing week divided in the ratio of wages to surplus value',
-    describe: (r) => tipLines(`${r.hours} hours`, `manufacturing week, ${r.key}`, `${hrs(r.a)} hours match wages`, `${hrs(r.b)} hours match surplus value`, `${Math.round(r.rate * 100)} cents of surplus per dollar of wages`),
+    describe: (r) => tipLines(`${r.hours} hours`, `manufacturing week, ${r.key}`, `${hrs(r.a)} hours match wages`, `${hrs(r.b)} hours match surplus value`, `${cents(r.rate)} of surplus value per dollar of variable capital`),
   });
 };
 
 const PART_LABELS = {
+  otherPay: 'Supervisory, managerial and trade pay',
   taxesProd: 'Taxes on production', interest: 'Net interest', transfers: 'Business transfers', profitTax: 'Corporate income tax', dividends: 'Dividends', retained: 'Undistributed profits',
 };
 
@@ -168,21 +171,23 @@ const renderSurplus = () => {
   const rate = ACC.map((r) => ({ x: r.year, y: r.rate, r }));
   const hi = peak(rate, 'y');
   const lo = peak(rate, 'y', 'min');
-  $('#surplus-dek').textContent = `Surplus value is everything nonfinancial corporations add beyond the wages they pay. In ${LAST.year}: ${usd(LAST.nva * 1e6)} of net value added, ${usd(LAST.v * 1e6)} of compensation, ${usd(LAST.s * 1e6)} of surplus.`;
+  $('#surplus-dek').textContent = `Nonfinancial corporations, ${LAST.year}: ${usd(LAST.nva * 1e6)} of net value added. Variable capital, the pay of production and nonsupervisory workers outside trade, finance and real estate: ${usd(LAST.v * 1e6)}, ${pct(LAST.share)} of ${usd(LAST.comp * 1e6)} in compensation. Surplus value: ${usd(LAST.s * 1e6)}.`;
   lines({
     mount: $('#rate-chart'),
     scale: 'linear',
-    yFormat: (v) => `${Math.round(v * 100)}¢`,
+    yFormat: (v) => `$${v}`,
     labelW: 70,
     series: [{ label: 's ÷ v', rows: rate, alt: true }],
-    annotations: [{ x: hi.x, text: `${hi.x}: ${Math.round(hi.y * 100)}¢` }, { x: lo.x, text: `${lo.x}: ${Math.round(lo.y * 100)}¢` }],
+    annotations: [{ x: hi.x, text: `${hi.x}: ${cents(hi.y)}` }, { x: lo.x, text: `${lo.x}: ${cents(lo.y)}` }],
     aria: 'Rate of surplus value, nonfinancial corporations',
     describe: (yr) => {
       const r = ACC.find((a) => a.year === yr);
-      return tipLines(`${Math.round(r.rate * 100)}¢ per $1 of wages`, String(yr), `Net value added ${usd(r.nva * 1e6)}`, `Compensation ${usd(r.v * 1e6)}`, `Surplus value ${usd(r.s * 1e6)}`, { href: SOURCES.beaNipa, text: 'NIPA Table 1.14' });
+      return tipLines(`${cents(r.rate)} per $1 of variable capital`, String(yr), `Net value added ${usd(r.nva * 1e6)}`, `Compensation of all employees ${usd(r.comp * 1e6)}`,
+        `Variable capital ${usd(r.v * 1e6)}, ${pct(r.share)}`, `Surplus value ${usd(r.s * 1e6)}`, { href: SOURCES.beaNipa, text: 'NIPA Table 1.14' });
     },
   });
-  const from = ACC.findLast((r) => Object.values(r.parts).some((v) => v < 0)).year + 1;
+  const negative = ACC.findLast((r) => Object.values(r.parts).some((v) => v < 0));
+  const from = negative ? negative.year + 1 : ACC[0].year;
   const rows = ACC.filter((r) => r.year >= from);
   stackedArea({
     mount: $('#parts-chart'),
@@ -192,50 +197,54 @@ const renderSurplus = () => {
     max: 100,
     aria: 'Where surplus value goes, percent',
   });
-  $('#parts-chart').nextElementSibling.textContent = `Where surplus value goes, ${from} on, percent of the total each year: taxes on production, net interest, business transfers, taxes on corporate income, dividends and undistributed profits. Earlier years include negative profits. Source: BEA NIPA Table 1.14, lines 23 to 31.`;
+  $('#parts-chart').nextElementSibling.textContent = `Where surplus value goes, ${from} on, percent of the total each year: the pay of supervisors, managers, officers and trade staff, taxes on production, net interest, business transfers, taxes on corporate income, dividends and undistributed profits.${negative ? ' Earlier years include negative profits.' : ''} Source: BEA NIPA Table 1.14, lines 20 to 31.`;
 };
 
 const renderIndustries = () => {
-  const { years, rows, published } = snapshot.industries;
-  const i = years.length - 1;
-  const list = rows.filter((r) => r.depth === 1).map((r) => ({
-    key: r.label, label: INDUSTRY_LABELS[r.label] ?? r.label, a: industrySurplus(r, 0), b: industrySurplus(r, i), r,
-  })).filter((r) => r.a > 0 && r.b > 0);
+  const { years, published } = snapshot.industries;
+  const all = industryRates(snapshot);
+  const i = years.findIndex((_, k) => all.every((x) => x.rates[k]));
+  const j = years.length - 1;
+  const list = all.map((x) => ({
+    key: x.r.label, label: x.label, a: x.rates[i].rate, b: x.rates[j].rate, r: x.r, now: x.rates[j],
+  }));
   const sorted = sortRows(list, 'b', 'desc');
-  $('#industries-dek').textContent = `Value added less compensation, per dollar of compensation, ${years[0]} and ${years[i]}, for ${list.length} sectors. Gross of depreciation, which this table does not split by industry.`;
+  $('#industries-dek').textContent = `Surplus value per dollar of variable capital, ${years[i]} and ${years[j]}, for ${list.length} industries that produce goods and services for sale. Value added is net of depreciation.`;
   dumbbell({
     mount: $('#industry-chart'),
     rows: sorted,
-    years: [years[0], years[i]],
+    years: [years[i], years[j]],
     format: cents,
     tickFormat: (t) => `$${t}`,
-    aria: 'Surplus per dollar of compensation by industry',
-    describe: (r) => tipLines(`${cents(r.b)} per $1 of compensation`, `${r.label}, ${years[i]}`, `${cents(r.a)} in ${years[0]}`,
-      `Compensation ${usd(r.r.comp[i] * 1e6)}`, `Taxes on production ${usd(r.r.taxes[i] * 1e6)}`, `Gross operating surplus ${usd(r.r.gos[i] * 1e6)}`),
+    aria: 'Rate of surplus value by industry',
+    describe: (r) => tipLines(`${cents(r.b)} per $1 of variable capital`, `${r.label}, ${years[j]}`, `${cents(r.a)} in ${years[i]}`,
+      `Value added ${usd((r.r.comp[j] + r.r.taxes[j] + r.r.gos[j]) * 1e6)}`, `Depreciation ${usd(r.now.depreciation * 1e6)}`,
+      `Variable capital ${usd(r.now.v * 1e6)}`, `Surplus value ${usd(r.now.s * 1e6)}`),
   });
-  $('#industry-caption').textContent = `Taxes on production plus gross operating surplus, per dollar of compensation of employees, log scale. Finance and real estate includes the rental value of owner-occupied housing, which pays no wages. Source: BEA GDP by Industry, Table TVA113, published ${published}.`;
+  $('#industry-caption').textContent = `Value added less depreciation and variable capital, per dollar of variable capital, log scale. Variable capital is the industry’s compensation times the share of its wages paid to production and nonsupervisory workers. Trade, finance, insurance, real estate, farms and government are left out; value added includes the income of proprietors and partnerships. Sources: BEA GDP by Industry Table TVA113, published ${published}; Fixed Assets Table 3.4ESI; NIPA Table 6.3D; BLS aggregate weekly payrolls.`;
 };
 
 const renderProductivity = () => {
-  const base = (id) => {
+  const pay = realEarnings(snapshot);
+  const y0 = pay[0].year;
+  const index = (id) => {
     const m = series(snapshot, id);
-    const [, v0] = firstOf(m);
-    return pts(m, (v) => (v / v0) * 100);
+    return pts(m).filter((p) => p.x >= y0).map((p) => ({ x: p.x, y: (p.y / m.get(y0)) * 100 }));
   };
-  const out = base('PRS85006093');
-  const pay = base('PRS85006153');
-  const share = base('PRS85006173');
-  $('#productivity-dek').textContent = `Indexes, ${out[0].x} = 100. In ${out.at(-1).x}: output per hour ${Math.round(out.at(-1).y)}, real hourly compensation ${Math.round(pay.at(-1).y)}, labor share ${Math.round(share.at(-1).y)}.`;
+  const out = index('PRS85006093');
+  const comp = index('PRS85006153');
+  const pns = pay.map((p) => ({ x: p.year, y: (p.v / pay[0].v) * 100 }));
+  $('#productivity-dek').textContent = `Indexes, ${y0} = 100. In ${out.at(-1).x}: output per hour ${Math.round(out.at(-1).y)}, real hourly compensation of all employees ${Math.round(comp.at(-1).y)}, real hourly earnings of production and nonsupervisory workers ${Math.round(pns.at(-1).y)}.`;
   const at = (list, yr) => list.find((p) => p.x === yr)?.y;
   lines({
     mount: $('#productivity-chart'),
     scale: 'linear',
     yFormat: (v) => String(v),
     labelW: 120,
-    series: [{ label: 'Output per hour', rows: out, alt: true }, { label: 'Real pay per hour', rows: pay }, { label: 'Labor share', rows: share, cls: 'mid' }],
-    aria: 'Output per hour and real hourly compensation, indexes',
-    describe: (yr) => tipLines(String(yr), `index, ${out[0].x} = 100`, `Output per hour ${Math.round(at(out, yr))}`, `Real hourly compensation ${Math.round(at(pay, yr))}`, `Labor share ${Math.round(at(share, yr))}`,
-      { href: bls('PRS85006093'), text: 'Open at BLS' }),
+    series: [{ label: 'Output per hour', rows: out, alt: true }, { label: 'Pay, all employees', rows: comp, cls: 'mid' }, { label: 'Production workers', rows: pns }],
+    aria: 'Output per hour and real hourly pay, indexes',
+    describe: (yr) => tipLines(String(yr), `index, ${y0} = 100`, `Output per hour ${Math.round(at(out, yr))}`, `Real hourly compensation, all employees ${Math.round(at(comp, yr))}`,
+      `Real hourly earnings, production and nonsupervisory ${Math.round(at(pns, yr))}`, { href: bls('PRS85006093'), text: 'Open at BLS' }),
   });
 };
 
@@ -256,7 +265,7 @@ const renderWages = () => {
     aria: 'Real and nominal average hourly earnings',
     describe: (r) => tipLines(cents(r.real), `${r.year}, in ${CPI_YEAR} dollars`, `${cents(r.nominal)} at the time`, { href: bls('CEU0500000008'), text: 'Open at BLS' }),
   });
-  $('#real-wage-caption').textContent = `Average hourly earnings, private-sector production and nonsupervisory employees, in ${CPI_YEAR} dollars (bars) and at the time (red). Deflated with the CPI-U annual average. Sources: BLS CEU0500000008, CUUR0000SA0.`;
+  $('#real-wage-caption').textContent = `Average hourly earnings, private-sector production and nonsupervisory employees, in ${CPI_YEAR} dollars (bars) and at the time (red). Deflated with the CPI-W annual average, the price index for urban wage earners and clerical workers. Sources: BLS CEU0500000008, CWUR0000SA0.`;
   const mins = realMinimum(snapshot);
   const at = (yr) => mins.find((m) => m.year === yr);
   lines({
@@ -366,7 +375,7 @@ const renderComposition = () => {
   const rows = ACC.filter((r) => r.composition !== null).map((r) => ({ x: r.year, y: r.composition, r }));
   const hi = peak(rows, 'y');
   const lo = peak(rows, 'y', 'min');
-  $('#composition-dek').textContent = `In ${LAST.year}, nonfinancial corporations held ${usd(LAST.C * 1e6)} in fixed assets and paid ${usd(LAST.v * 1e6)} in compensation. Highest ratio: ${cents(hi.y)} in ${hi.x}. Lowest: ${cents(lo.y)} in ${lo.x}.`;
+  $('#composition-dek').textContent = `At the end of ${LAST.year - 1}, nonfinancial corporations held ${usd(LAST.fixed * 1e6)} in fixed assets and ${usd(LAST.stock * 1e6)} in inventories. In ${LAST.year} they paid ${usd(LAST.v * 1e6)} in variable capital. Highest ratio: ${cents(hi.y)} in ${hi.x}. Lowest: ${cents(lo.y)} in ${lo.x}.`;
   lines({
     mount: $('#composition-chart'),
     scale: 'linear',
@@ -374,10 +383,11 @@ const renderComposition = () => {
     labelW: 70,
     series: [{ label: 'C ÷ v', rows, alt: true }],
     annotations: [{ x: hi.x, text: `${hi.x}: ${cents(hi.y)}` }, { x: lo.x, text: `${lo.x}: ${cents(lo.y)}` }],
-    aria: 'Fixed capital per dollar of wages',
+    aria: 'Constant capital per dollar of variable capital',
     describe: (yr) => {
       const r = rows.find((p) => p.x === yr).r;
-      return tipLines(`${cents(r.composition)} per $1 of wages`, String(yr), `Fixed assets ${usd(r.C * 1e6)}`, `Compensation ${usd(r.v * 1e6)}`, { href: SOURCES.beaFixed, text: 'Fixed Assets Table 6.1' });
+      return tipLines(`${cents(r.composition)} per $1 of variable capital`, String(yr), `Fixed assets ${usd(r.fixed * 1e6)}`, `Inventories ${usd(r.stock * 1e6)}`, `Variable capital ${usd(r.v * 1e6)}`,
+        { href: SOURCES.beaFixed, text: 'Fixed Assets Table 6.1' });
     },
   });
 };
@@ -387,7 +397,7 @@ const renderProfit = () => {
   const hi = peak(rows, 'y');
   const lo = peak(rows, 'y', 'min');
   const nos = ACC.filter((r) => r.profit !== null).map((r) => ({ x: r.year, y: ((r.parts.interest + r.parts.transfers + r.parts.profitTax + r.parts.dividends + r.parts.retained) / r.C) * 100 }));
-  $('#profit-dek').textContent = `Surplus value per dollar of fixed capital. The lower line leaves out taxes on production, counting net operating surplus only.`;
+  $('#profit-dek').textContent = 'Surplus value per dollar of constant capital: fixed assets and inventories. The lower line counts net operating surplus only, leaving out taxes on production and the pay of supervisors, managers, officers and trade staff.';
   lines({
     mount: $('#profit-chart'),
     scale: 'linear',
@@ -398,7 +408,7 @@ const renderProfit = () => {
     aria: 'Rate of profit, nonfinancial corporations',
     describe: (yr) => {
       const r = rows.find((p) => p.x === yr);
-      return tipLines(percent(r.y), String(yr), `Surplus value ${usd(r.r.s * 1e6)}`, `Fixed assets at the end of ${yr - 1}: ${usd(r.r.C * 1e6)}`, `Net operating surplus only: ${percent(nos.find((p) => p.x === yr).y)}`);
+      return tipLines(percent(r.y), String(yr), `Surplus value ${usd(r.r.s * 1e6)}`, `Fixed assets and inventories at the end of ${yr - 1}: ${usd(r.r.C * 1e6)}`, `Net operating surplus only: ${percent(nos.find((p) => p.x === yr).y)}`);
     },
   });
   const fin = series(snapshot, 'A587RC');
@@ -576,6 +586,7 @@ const renderIncome = () => {
   const list = Object.keys(NI_LABELS).map((key, i) => ({
     label: NI_LABELS[key], rows: rows.map((x) => ({ x: x.year, y: x.parts.find((p) => p.key === key).share * 100 })), color: i ? CAT[i] : null, alt: i === 0,
   }));
+  list.splice(1, 0, { label: 'Production workers’ pay', rows: rows.filter((x) => x.workers !== null).map((x) => ({ x: x.year, y: x.workers * 100 })), cls: 'mid' });
   lines({
     mount: $('#ni-chart'),
     scale: 'linear',
@@ -584,7 +595,8 @@ const renderIncome = () => {
     height: 340,
     series: list,
     aria: 'National income by type, percent',
-    describe: (yr) => tipLines(String(yr), `percent of ${usd(rows.find((x) => x.year === yr).total * 1e6)}`, ...list.map((s) => `${s.label} ${percent(s.rows.find((p) => p.x === yr).y)}`)),
+    describe: (yr) => tipLines(String(yr), `percent of ${usd(rows.find((x) => x.year === yr).total * 1e6)}`,
+      ...list.map((s) => [s.label, s.rows.find((p) => p.x === yr)]).filter(([, p]) => p).map(([label, p]) => `${label} ${percent(p.y)}`)),
   });
 };
 
@@ -909,6 +921,9 @@ const seriesRows = () => {
     fixed('Union membership', HIST.unions.rows[0][0], 'Historical Statistics D 940', `${exact(HIST.unions.rows.at(-1)[1] * 1000)} (${HIST.unions.rows.at(-1)[0]})`, 'hsus'),
     fixed('Coal mining deaths', COAL[0][0], 'MSHA', `${exact(coal[2])} (${coal[0]})`, 'msha'),
     bl('Consumer prices', 'CUUR0000SA0', (v) => v.toFixed(1)),
+    bl('Consumer prices, wage earners', 'CWUR0000SA0', (v) => v.toFixed(1)),
+    bl('Weekly payroll, production and nonsupervisory workers', 'CEU0500000082', (v) => usd(v * 1000)),
+    { ...live('LM105020015', (v) => usd(v * 1e6)), name: 'Inventories, nonfinancial corporations', source: 'Federal Reserve Z.1', src: 'z1', id: null },
     { name: 'Fixed assets, nonfinancial corporations', ...live('k1pnofi2es00', (v) => usd(v * 1e6)), source: 'BEA', id: 'k1pnofi2es00', src: null },
     be('Compensation, nonfinancial corporations', 'A460RC', (v) => usd(v * 1e6)),
     bl('Weekly hours, manufacturing', 'CEU3000000007', (v) => String(v)),
