@@ -14,6 +14,7 @@ import {
   parseDfa,
   parseIncomeShares,
   parseZ1,
+  parseWorldBank,
   lobbyingDollars,
   toModule,
 } from '../../scripts/parsers.mjs';
@@ -170,6 +171,19 @@ test('parseZ1 reads annual columns from one CSV in the release zip and skips ND'
   });
   assert.deepEqual(parseZ1(Z1, 'csv/S11_1_i_a.csv', ['LM105020015.A', 'MISSING.A']), {
     'LM105020015.A': [[1946, 39688], [2025, 3692639]],
+  });
+});
+
+test('parseWorldBank groups values by indicator and country in year order and drops nulls', () => {
+  const json = [{ page: 1 }, [
+    { indicator: { id: 'NY.GDP.MKTP.CD' }, countryiso3code: 'USA', date: '2025', value: 30 },
+    { indicator: { id: 'NY.GDP.MKTP.CD' }, countryiso3code: 'USA', date: '2024', value: 29 },
+    { indicator: { id: 'NY.GDP.MKTP.CD' }, countryiso3code: 'CHN', date: '2024', value: null },
+    { indicator: { id: 'NV.IND.MANF.CD' }, countryiso3code: 'WLD', date: '2021', value: 16 },
+  ]];
+  assert.deepEqual(parseWorldBank(json), {
+    'NY.GDP.MKTP.CD': { USA: [[2024, 29], [2025, 30]] },
+    'NV.IND.MANF.CD': { WLD: [[2021, 16]] },
   });
 });
 

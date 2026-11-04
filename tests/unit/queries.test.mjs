@@ -70,3 +70,12 @@ test('productive payrolls and industry maps point at known series', async () => 
   assert.equal(Z1.file, 'csv/S11_1_i_a.csv');
   assert.ok(Z1.codes.includes('LM105020015.A'));
 });
+
+test('world, force and income series are named', async () => {
+  const { WORLD } = await import('../../src/queries.js');
+  assert.deepEqual(WORLD.indicators.map((i) => i.id), ['NY.GDP.MKTP.CD', 'NV.IND.MANF.CD']);
+  assert.deepEqual(WORLD.countries.map((c) => c.id), ['USA', 'CHN', 'EUU', 'JPN', 'IND', 'WLD']);
+  for (const code of ['A191RC', 'W022RC', 'G16007', 'G16008', 'G16009', 'G16011', 'G16012', 'G16034', 'G16027', 'G16029', 'W160RC', 'B3375C', 'A2067C', 'B3475C', 'W161RC', 'A048RC', 'A065RC']) {
+    assert.ok(NIPA[code], code);
+  }
+});
