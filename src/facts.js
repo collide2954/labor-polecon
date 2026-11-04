@@ -99,6 +99,18 @@ export const SOURCES = {
   dolAct: 'https://www.govinfo.gov/content/pkg/STATUTE-37/pdf/STATUTE-37-Pg736.pdf',
   nlrbHist: 'https://www.nlrb.gov/about-nlrb/who-we-are/our-history',
   cpsHist: 'https://www.census.gov/programs-surveys/cps/about/history-of-the-cps.html',
+  censusRace: 'https://www.census.gov/library/working-papers/2002/demo/POP-twps0056.html',
+  censusNativity: 'https://www.census.gov/library/working-papers/1999/demo/POP-twps0029.html',
+  censusRegions: 'https://www.census.gov/data/tables/time-series/dec/popchange-data-text.html',
+  censusHouseholds: 'https://www2.census.gov/programs-surveys/demo/tables/families/time-series/households/hh6.xls',
+  censusPoverty: 'https://www2.census.gov/programs-surveys/cps/tables/time-series/historical-poverty-people/hstpov2.xlsx',
+  censusHomes: 'https://www.census.gov/housing/hvs/data/histtab16.xlsx',
+  censusAges: 'https://www2.census.gov/programs-surveys/popest/datasets/',
+  worldBank: 'https://data.worldbank.org/indicator/NY.GDP.MKTP.CD',
+  dhsRemovals: 'https://ohss.dhs.gov/topics/immigration/yearbook/2022/table39',
+  crsDeployments: 'https://crsreports.congress.gov/product/pdf/R/R42738',
+  bjsPrisoners: 'https://bjs.ojp.gov/content/pub/pdf/p2581.pdf',
+  bjsCsat: 'https://csat.bjs.ojp.gov/',
 };
 
 export const TAGS = ['hours', 'wages', 'organizing', 'strikes', 'courts', 'safety', 'slavery'];
@@ -449,6 +461,131 @@ export const HIST = {
   ]),
 };
 
+export const POP = {
+  census: {
+    title: 'Population by census, with the Black and enslaved population',
+    series: 'Census working paper 56, Table 1; 2000 to 2020 census counts',
+    columns: ['Year', 'Total', 'Black', 'Enslaved'],
+    src: 'censusRace',
+    rows: [
+    [1790, 3929214, 757208, 697681], [1800, 5308483, 1002037, 893602], [1810, 7239881, 1377808, 1191362], [1820, 9638453, 1771656, 1538022],
+    [1830, 12860702, 2328642, 2009043], [1840, 17063353, 2873648, 2487355], [1850, 23191876, 3638808, 3204313], [1860, 31443321, 4441830, 3953760],
+    [1870, 38558371, 4880009, null], [1880, 50155783, 6580793, null], [1890, 62947714, 7488676, null], [1900, 75994575, 8833994, null],
+    [1910, 91972266, 9827763, null], [1920, 105710620, 10463131, null], [1930, 122775046, 11891143, null], [1940, 131669275, 12865518, null],
+    [1950, 150697361, 15042286, null], [1960, 179323175, 18871831, null], [1970, 203211926, 22580289, null], [1980, 226545805, 26495025, null],
+    [1990, 248709873, 29986060, null], [2000, 281421906, null, null], [2010, 308745538, null, null], [2020, 331449281, null, null],
+    ],
+  },
+  nativity: {
+    title: 'Foreign-born population by census',
+    series: 'Census working paper 29, Table 1',
+    columns: ['Year', 'Total', 'Foreign born'],
+    src: 'censusNativity',
+    rows: [
+    [1850, 23191876, 2244602], [1860, 31443321, 4138697], [1870, 38558371, 5567229], [1880, 50155783, 6679943],
+    [1890, 62622250, 9249547], [1900, 75994575, 10341276], [1910, 91972266, 13515886], [1920, 105710620, 13920692],
+    [1930, 122775046, 14204149], [1940, 131669275, 11594896], [1950, 150216110, 10347395], [1960, 179325671, 9738091],
+    [1970, 203210158, 9619302], [1980, 226545805, 14079906], [1990, 248709873, 19767316],
+    ],
+  },
+  regions: {
+    title: 'Resident population by region',
+    series: 'Census apportionment and population change data',
+    columns: ['Year', 'Northeast', 'Midwest', 'South', 'West', 'United States'],
+    src: 'censusRegions',
+    rows: [
+    [1910, 25868573, 29888542, 29389330, 7082086, 92228531], [1920, 29662053, 34019792, 33125803, 9213920, 106021568],
+    [1930, 34427091, 38594100, 37857633, 12323836, 123202660], [1940, 35976777, 40143332, 41665901, 14379119, 132165129],
+    [1950, 39477986, 44460762, 47197088, 20189962, 151325798], [1960, 44677819, 51619139, 54973113, 28053104, 179323175],
+    [1970, 49040703, 56571663, 62795367, 34804193, 203211926], [1980, 49135283, 58865670, 75372362, 43172490, 226545805],
+    [1990, 50809229, 59668632, 85445930, 52786082, 248709873], [2000, 53594378, 64392776, 100236820, 63197932, 281421906],
+    [2010, 55317240, 66927001, 114555744, 71945553, 308745538], [2020, 57609148, 68985454, 126266107, 78588572, 331449281],
+    ],
+  },
+  households: {
+    title: 'Average number of people per household',
+    series: 'Census Table HH-6',
+    columns: ['Year', 'People per household'],
+    src: 'censusHouseholds',
+    rows: [
+    [1940, 3.67], [1950, 3.37], [1960, 3.33], [1970, 3.14], [1980, 2.76],
+    [1990, 2.63], [2000, 2.62], [2010, 2.59], [2020, 2.53], [2025, 2.5],
+    ],
+  },
+};
+
+export const ORDER = {
+  removals: {
+    title: 'Noncitizen removals and returns by fiscal year',
+    series: 'DHS Yearbook of Immigration Statistics 2022, Table 39',
+    columns: ['Year', 'Removals', 'Returns'],
+    src: 'dhsRemovals',
+    rows: [
+    [1892, 2801, null], [1893, 1630, null], [1894, 1806, null], [1895, 2596, null], [1896, 3037, null],
+    [1897, 1880, null], [1898, 3229, null], [1899, 4052, null], [1900, 4602, null], [1901, 3879, null],
+    [1902, 5439, null], [1903, 9316, null], [1904, 8773, null], [1905, 12724, null], [1906, 13108, null],
+    [1907, 14059, null], [1908, 12971, null], [1909, 12535, null], [1910, 26965, null], [1911, 25137, null],
+    [1912, 18513, null], [1913, 23399, null], [1914, 37651, null], [1915, 26675, null], [1916, 21648, null],
+    [1917, 17881, null], [1918, 8866, null], [1919, 11694, null], [1920, 14557, null], [1921, 18296, null],
+    [1922, 18076, null], [1923, 24280, null], [1924, 36693, null], [1925, 34885, null], [1926, 31454, null],
+    [1927, 31417, 15012], [1928, 30464, 19946], [1929, 31035, 25888], [1930, 24864, 11387], [1931, 27886, 11719],
+    [1932, 26490, 10775], [1933, 25392, 10347], [1934, 14263, 8010], [1935, 13877, 7978], [1936, 16195, 8251],
+    [1937, 16905, 8788], [1938, 17341, 9278], [1939, 14700, 9590], [1940, 12254, 8594], [1941, 7336, 6531],
+    [1942, 5542, 6904], [1943, 5702, 11947], [1944, 8821, 32270], [1945, 13611, 69490], [1946, 17317, 101945],
+    [1947, 23434, 195880], [1948, 25276, 197184], [1949, 23874, 276297], [1950, 10199, 572477], [1951, 17328, 673169],
+    [1952, 23125, 703778], [1953, 23482, 885391], [1954, 30264, 1074277], [1955, 17695, 232769], [1956, 9006, 80891],
+    [1957, 5989, 63379], [1958, 7875, 60600], [1959, 8468, 56610], [1960, 7240, 52796], [1961, 8181, 52383],
+    [1962, 8025, 54164], [1963, 7763, 69392], [1964, 9167, 73042], [1965, 10572, 95263], [1966, 9680, 123683],
+    [1967, 9728, 142343], [1968, 9590, 179952], [1969, 11030, 240958], [1970, 17469, 303348], [1971, 18294, 370074],
+    [1972, 16883, 450927], [1973, 17346, 568005], [1974, 19413, 718740], [1975, 24432, 655814], [1976, 38471, 955374],
+    [1977, 31263, 867015], [1978, 29277, 975515], [1979, 26825, 966137], [1980, 18013, 719211], [1981, 17379, 823875],
+    [1982, 15216, 812572], [1983, 19211, 931600], [1984, 18696, 909833], [1985, 23105, 1041296], [1986, 24592, 1586320],
+    [1987, 24336, 1091203], [1988, 25829, 911790], [1989, 34427, 830890], [1990, 30039, 1022533], [1991, 33189, 1061105],
+    [1992, 43671, 1105829], [1993, 42542, 1243410], [1994, 45674, 1029107], [1995, 50924, 1313764], [1996, 69680, 1573428],
+    [1997, 114432, 1440684], [1998, 174813, 1570127], [1999, 183114, 1574863], [2000, 188467, 1675876], [2001, 189026, 1349371],
+    [2002, 165168, 1012116], [2003, 211098, 945294], [2004, 240665, 1166576], [2005, 246431, 1096920], [2006, 280974, 1043381],
+    [2007, 319382, 891390], [2008, 359795, 811263], [2009, 379739, 582562], [2010, 382449, 471793], [2011, 390413, 322045],
+    [2012, 415579, 231105], [2013, 432334, 178972], [2014, 405193, 163836], [2015, 324428, 129636], [2016, 332331, 106478],
+    [2017, 284365, 100452], [2018, 327608, 159958], [2019, 347090, 171120], [2020, 237364, 167452], [2021, 85783, 178003],
+    [2022, 108733, 261387],
+    ],
+  },
+  deployments: {
+    title: 'Instances of use of U.S. armed forces abroad, by decade begun',
+    series: 'CRS report R42738, listing through April 2023',
+    columns: ['Decade', 'Instances'],
+    src: 'crsDeployments',
+    rows: [
+    [1790, 1], [1800, 3], [1810, 12], [1820, 7], [1830, 6], [1840, 9],
+    [1850, 20], [1860, 13], [1870, 7], [1880, 6], [1890, 18], [1900, 15],
+    [1910, 26], [1920, 14], [1930, 3], [1940, 11], [1950, 6], [1960, 7],
+    [1970, 9], [1980, 22], [1990, 67], [2000, 49], [2010, 103], [2020, 37],
+    ],
+  },
+  prisonsEarly: {
+    title: 'Sentenced prisoners in state and federal institutions and rate per 100,000 residents',
+    series: 'BJS, Prisoners 1925-81, Table 1',
+    columns: ['Year', 'Prisoners', 'Rate'],
+    src: 'bjsPrisoners',
+    rows: [
+    [1925, 91669, 79], [1926, 97991, 83], [1927, 109983, 91], [1928, 116390, 96],
+    [1929, 120496, 98], [1930, 129453, 104], [1931, 137082, 110], [1932, 137997, 110],
+    [1933, 136810, 109], [1934, 138316, 109], [1935, 144180, 113], [1936, 145038, 113],
+    [1937, 152741, 118], [1938, 160285, 123], [1939, 179818, 137], [1940, 173706, 131],
+    [1941, 165439, 124], [1942, 150384, 112], [1943, 137220, 103], [1944, 132456, 100],
+    [1945, 133649, 98], [1946, 140079, 99], [1947, 151304, 105], [1948, 155977, 106],
+    [1949, 163749, 109], [1950, 166123, 109], [1951, 165680, 107], [1952, 168233, 107],
+    [1953, 173579, 108], [1954, 182901, 112], [1955, 185780, 112], [1956, 189565, 112],
+    [1957, 195414, 113], [1958, 205643, 117], [1959, 208105, 117], [1960, 212953, 117],
+    [1961, 220149, 119], [1962, 218830, 117], [1963, 217283, 114], [1964, 214336, 111],
+    [1965, 210895, 108], [1966, 199654, 102], [1967, 194896, 98], [1968, 187914, 94],
+    [1969, 196007, 97], [1970, 196429, 96], [1971, 198061, 95], [1972, 196092, 93],
+    [1973, 204211, 96], [1974, 218466, 102], [1975, 240593, 111], [1976, 262833, 120],
+    [1977, 285456, 129],
+    ],
+  },
+};
+
 export const SOURCE_GROUPS = ['BLS', 'BEA', 'Census and Fed', 'Historical Statistics', 'Other data', 'Law and courts', 'Strikes and organizing', 'Reference'];
 
 export const SOURCE_TITLES = {
@@ -550,6 +687,18 @@ export const SOURCE_TITLES = {
   dolAct: ['Law and courts', 'An Act to create a Department of Labor, 37 Stat. 736 (1913)'],
   nlrbHist: ['Reference', 'Our history, National Labor Relations Board'],
   cpsHist: ['Reference', 'History of the Current Population Survey, Census Bureau'],
+  censusRace: ['Census and Fed', 'Historical Census Statistics on Population Totals by Race, 1790 to 1990, Census working paper 56'],
+  censusNativity: ['Census and Fed', 'Historical Census Statistics on the Foreign-born Population, 1850 to 1990, Census working paper 29'],
+  censusRegions: ['Census and Fed', 'Historical population change data, 1910 to 2020, Census Bureau'],
+  censusHouseholds: ['Census and Fed', 'Table HH-6, average population per household and family, Census Bureau'],
+  censusPoverty: ['Census and Fed', 'Historical poverty table 2: poverty status by race and Hispanic origin'],
+  censusHomes: ['Census and Fed', 'Housing Vacancy Survey Table 16: homeownership rates by race and ethnicity'],
+  censusAges: ['Census and Fed', 'Population estimates by single year of age, Census Bureau'],
+  worldBank: ['Other data', 'World Bank, World Development Indicators: GDP and manufacturing value added'],
+  dhsRemovals: ['Other data', 'Noncitizen removals, returns and expulsions, fiscal years 1892 to 2022, DHS Table 39'],
+  crsDeployments: ['Other data', 'Instances of Use of United States Armed Forces Abroad, 1798-2023, CRS report R42738'],
+  bjsPrisoners: ['Other data', 'Prisoners 1925-81, Bureau of Justice Statistics'],
+  bjsCsat: ['Other data', 'Corrections Statistical Analysis Tool, National Prisoner Statistics, Bureau of Justice Statistics'],
 };
 
 export const INDUSTRY_LABELS = {
