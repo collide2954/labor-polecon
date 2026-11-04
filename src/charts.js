@@ -769,16 +769,19 @@ export const splitBars = ({
   mount, rows, aria, describe, format = (v) => v.toFixed(1), labels = ['', ''],
 }) => {
   const W = widthOf(mount);
-  const T = 26;
   const lay = rowLayout(rows, Math.min(120, Math.max(60, W * 0.16)), 26);
   const { L, rowH } = lay;
   const R = 12;
+  const sideBySide = (labels[0].length + labels[1].length) * 8 + 24 <= W - L - R;
+  const T = sideBySide ? 26 : 44;
   const H = T + rows.length * rowH + 6;
   const max = Math.max(...rows.map((r) => r.a + r.b));
   const x = scaleLinear([0, max], [L, W - R]);
   const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': aria },
     el('text', { class: 'seg-key', x: L, y: 12 }, labels[0]),
-    el('text', { class: 'seg-key alt', x: W - R, y: 12, 'text-anchor': 'end' }, labels[1]),
+    el('text', {
+      class: 'seg-key alt', x: sideBySide ? W - R : L, y: sideBySide ? 12 : 30, 'text-anchor': sideBySide ? 'end' : 'start',
+    }, labels[1]),
     el('g', { class: lay.cls }, rows.map((r, i) => {
       const mid = T + i * rowH + rowH / 2;
       const y = mid + lay.markY;
