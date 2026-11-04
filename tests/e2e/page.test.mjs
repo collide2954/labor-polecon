@@ -504,3 +504,12 @@ test('chart keys never overlap on a phone', async () => {
   assert.deepEqual(clashes, []);
   await page.close();
 });
+
+test('the footer says AI helped and that a person reviewed the work', async () => {
+  const { page } = await open();
+  const note = await page.textContent('#foot .made');
+  assert.match(note, /^Made by a person, with help from AI tools\./);
+  assert.match(note, /reviewed before publishing/);
+  assert.match(await page.textContent('#foot'), /Not an official government site/);
+  await page.close();
+});
