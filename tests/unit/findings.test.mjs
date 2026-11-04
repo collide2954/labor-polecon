@@ -121,7 +121,7 @@ test('findings state each section as a number', () => {
   assert.equal(f.injury, 'Coal mining deaths: 3,242 in 1907, 8 in 2025');
   assert.equal(f.fatal, '5,070 fatal work injuries in 2024');
   assert.equal(f.lobbying, 'Business groups here reported $100M in lobbying in 2025; the unions here, $5M');
-  assert.match(f.history, /^\d+ events, 1806 to \d{4}$/);
+  assert.match(f.history, /^\d+ events, 1798 to \d{4}$/);
 });
 
 test('real snapshot gives every finding as text without filler words', () => {

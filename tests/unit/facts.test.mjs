@@ -17,10 +17,11 @@ test('every source is an https url with a title in a known group', () => {
 });
 
 test('timeline is long, dated, tagged, sourced and sorted', () => {
-  assert.ok(TIMELINE.length >= 50);
+  assert.ok(TIMELINE.length >= 120);
+  for (const org of ['War', 'Finance', 'Police', 'Trade']) assert.ok(TIMELINE.filter((e) => e.org === org).length >= 10, org);
   for (const item of TIMELINE) {
     assert.match(item.date, DATE, item.text);
-    assert.ok(['State', 'Labor'].includes(item.org), item.text);
+    assert.ok(['State', 'Labor', 'War', 'Finance', 'Police', 'Trade'].includes(item.org), item.text);
     assert.ok(TAGS.includes(item.tag), item.tag);
     assert.ok(item.text.length > 10 && item.text.length <= 140, item.text);
     assert.ok(SOURCES[item.src], `missing source ${item.src}`);
