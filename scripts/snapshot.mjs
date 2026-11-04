@@ -1,11 +1,12 @@
 import { writeFile } from 'node:fs/promises';
 import { retry } from '../src/lib.js';
 import {
-  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, WORLD, LOBBY, DFA_MEASURES,
+  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, WORLD, CENSUS, LOBBY, DFA_MEASURES,
 } from '../src/queries.js';
 import {
   parseBlsText, annual, latest, parseBeaFlat, parseRegister, readXlsx, parseValueAdded, parseBds, parseDfa,
-  parseIncomeShares, parseZ1, parseWorldBank, lobbyingDollars, toModule,
+  parseIncomeShares, parseZ1, parseWorldBank, parsePovertyByRace, parseHomeownership, parseAgeSex,
+  lobbyingDollars, toModule,
 } from './parsers.mjs';
 
 const OUT = new URL('../src/snapshot.js', import.meta.url);
@@ -84,6 +85,30 @@ const world = async () => {
   return out;
 };
 
+const poverty = async () => {
+  step('census poverty by race');
+  const book = readXlsx(await get(CENSUS.poverty, 'buffer'));
+  const out = parsePovertyByRace(Object.values(book)[0], CENSUS.povertyBlocks);
+  if (!out['All Races'] || !out['Black Alone']) throw new Error('Census poverty table changed shape');
+  return out;
+};
+
+const homes = async () => {
+  step('census homeownership by race');
+  const out = parseHomeownership(Object.values(readXlsx(await get(CENSUS.homes, 'buffer')))[0]);
+  if (out.years.length < 20) throw new Error('Census homeownership table changed shape');
+  return out;
+};
+
+const ages = async () => {
+  step('census population by age');
+  const listing = await get(CENSUS.popest);
+  const span = [...listing.matchAll(/href="(2020-(20\d\d))\/"/g)].sort((a, b) => a[2] - b[2]).at(-1);
+  const out = parseAgeSex(await get(`${CENSUS.popest}${span[1]}/national/asrh/nc-est${span[2]}-agesex-res.csv`));
+  if (out.ages.length < 90) throw new Error('Census age file changed shape');
+  return out;
+};
+
 const industries = async () => {
   step('bea value added by industry');
   const book = readXlsx(await get(`${BEA}/industry/Release/XLS/GDPxInd/ValueAdded.xlsx`, 'buffer'));
@@ -155,6 +180,9 @@ const SECTIONS = {
   fixed: () => fixed(),
   z1: () => z1(),
   world: () => world(),
+  poverty: () => poverty(),
+  homes: () => homes(),
+  ages: () => ages(),
   industries: () => industries(),
   firms: () => firms(),
   income: () => income(),
