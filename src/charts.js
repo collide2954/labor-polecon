@@ -522,7 +522,7 @@ export const timeline = ({ mount, events, people, projects, limits, onSelect, on
   let domain = [...limits];
   let selected = null;
   const EVENT_LANES = [
-    ['State', 'Law and the state'], ['Labor', 'Strikes and organizing'], ['War', 'Wars, invasions, coups'],
+    ['State', 'Law and the state'], ['Labor', 'Strikes and organizing'], ['War', 'Wars, coups, sanctions'],
     ['Finance', 'Finance and money'], ['Police', 'Policing and dissent'], ['Trade', 'Trade and capital abroad'],
   ];
   const laneY = Object.fromEntries(EVENT_LANES.map(([org], i) => [org, 46 + i * 32]));
