@@ -456,19 +456,24 @@ export const lines = ({
   const B = 24;
   const H = height;
   const xs = [...new Set(series.flatMap((s) => s.rows.map((r) => r.x)))].sort((a, b) => a - b);
-  const ys = series.flatMap((s) => s.rows.map((r) => r.y)).filter((v) => v > 0);
   const log = scale === 'log';
-  const lo = log ? 10 ** Math.floor(Math.log10(Math.min(...ys))) : 0;
-  const hi = log ? 10 ** Math.ceil(Math.log10(Math.max(...ys))) : niceTicks(Math.max(...ys), 4).at(-1);
+  const all = series.flatMap((s) => s.rows.map((r) => r.y));
+  const ys = all.filter((v) => v > 0);
+  const neg = log ? 0 : Math.min(0, ...all);
+  const up = niceTicks(Math.max(...ys), 4);
+  const unit = up[1] ?? 1;
+  const down = neg < 0 ? Array.from({ length: Math.ceil(-neg / unit) }, (_, i) => -(i + 1) * unit).reverse() : [];
+  const lo = log ? 10 ** Math.floor(Math.log10(Math.min(...ys))) : (down[0] ?? 0);
+  const hi = log ? 10 ** Math.ceil(Math.log10(Math.max(...ys))) : up.at(-1);
   const x = scaleLinear([xs[0], xs.at(-1)], [L, W - R]);
-  const y = log ? scaleLog([lo, hi], [H - B, T]) : scaleLinear([0, hi], [H - B, T]);
-  const ticks = log ? logTicks(lo, hi).filter((t) => Math.round(Math.log10(t)) % logStep === 0) : niceTicks(Math.max(...ys), 4);
+  const y = log ? scaleLog([lo, hi], [H - B, T]) : scaleLinear([lo, hi], [H - B, T]);
+  const ticks = log ? logTicks(lo, hi).filter((t) => Math.round(Math.log10(t)) % logStep === 0) : [...down, ...up];
   const step = labelStep(xs.length, W - L - R, 40);
   const labelY = spread(series.map((s) => y(s.rows.at(-1).y)), 14, T, H - B);
   const cross = el('line', { class: 'cross', y1: T, y2: H - B, x1: 0, x2: 0, visibility: 'hidden' });
   const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': aria },
     ticks.map((t) => el('g', {},
-      el('line', { class: 'grid', x1: L, x2: W - R, y1: y(t), y2: y(t) }),
+      el('line', { class: t === 0 && lo < 0 ? 'base' : 'grid', x1: L, x2: W - R, y1: y(t), y2: y(t) }),
       el('text', { x: L - 8, y: y(t) + 4, 'text-anchor': 'end' }, yFormat(t)))),
     el('line', { class: 'base', x1: L, x2: W - R, y1: H - B, y2: H - B }),
     xs.map((v) => (v % step === 0 ? el('text', { x: x(v), y: H - 6, 'text-anchor': 'middle' }, v) : null)),
@@ -477,7 +482,7 @@ export const lines = ({
       const ly = labelY[n];
       const moved = Math.abs(ly - y(last.y)) > 2;
       return el('g', {},
-        el('path', { class: `line${s.alt ? ' alt' : ''}${s.cls ? ` ${s.cls}` : ''}`, d: `M${s.rows.filter((r) => !log || r.y > 0).map((r) => `${x(r.x).toFixed(1)},${y(r.y).toFixed(1)}`).join('L')}` }),
+        el('path', { class: `line${s.alt ? ' alt' : ''}${s.cls ? ` ${s.cls}` : ''}`, d: `M${s.rows.filter((r) => !log || r.y > 0).map((r) => `${x(r.x).toFixed(1)},${y(r.y).toFixed(1)}`).join('L')}`, style: s.color ? `stroke:${s.color}` : null }),
         moved ? el('path', { class: 'leader', d: `M${x(last.x) + 2},${y(last.y)}L${x(last.x) + 7},${ly}` }) : null,
         el('text', { class: 'lab', x: x(last.x) + (moved ? 10 : 8), y: ly + 4 }, s.label));
     }),
