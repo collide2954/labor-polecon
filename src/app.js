@@ -186,6 +186,7 @@ const renderSurplus = () => {
     years: rows.map((r) => r.year),
     series: Object.keys(PART_LABELS).map((key, i) => ({ key, label: PART_LABELS[key], color: CAT[i], values: rows.map((r) => (r.parts[key] / r.s) * 100) })),
     format: percent,
+    max: 100,
     aria: 'Where surplus value goes, percent',
   });
   $('#parts-chart').nextElementSibling.textContent = `Where surplus value goes, ${from} on, percent of the total each year: taxes on production, net interest, business transfers, taxes on corporate income, dividends and undistributed profits. Earlier years include negative profits. Source: BEA NIPA Table 1.14, lines 23 to 31.`;
@@ -534,6 +535,7 @@ const renderClass = () => {
       { key: 'unpaid', label: 'Unpaid family', color: CAT[2], values: rows.map((r) => r.unpaid * 100) },
     ],
     format: percent,
+    max: 100,
     aria: 'The employed by class of worker, percent',
   });
   const lf = HIST.laborForce.rows;
@@ -590,6 +592,7 @@ const renderHouseholds = () => {
     years: rows.map((r) => r.year),
     series: names.map((label, i) => ({ key: `q${i}`, label, color: i === 4 ? CAT[0] : ['var(--w1)', 'var(--w2)', 'var(--w3)', 'var(--w4)'][i], values: rows.map((r) => r.shares[i]) })),
     format: percent,
+    max: 100,
     aria: 'Share of household income by fifth',
   });
 };
@@ -603,6 +606,7 @@ const renderWealth = () => {
     years: qs.map(year),
     series: [...DFA_GROUPS].reverse().map((g, i) => ({ key: g.key, label: g.label, color: CAT[i], values: qs.map((q) => q['Net worth'][g.key] * 100) })),
     format: percent,
+    max: 100,
     aria: 'Share of household net worth by wealth group',
   });
   const q = qs.at(-1);
@@ -626,6 +630,7 @@ const renderTaxes = () => {
     years: rows.map((x) => x.year),
     series: Object.keys(FR_LABELS).map((key, i) => ({ key, label: FR_LABELS[key], color: CAT[i === 4 ? 6 : i], values: rows.map((x) => x.parts.find((p) => p.key === key).share * 100) })),
     format: percent,
+    max: 100,
     aria: 'Federal receipts by source, percent',
   });
 };

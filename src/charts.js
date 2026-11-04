@@ -342,7 +342,9 @@ export const dotplot = ({
   };
 };
 
-export const stackedArea = ({ mount, years, series, aria, format = exact }) => {
+export const stackedArea = ({
+  mount, years, series, aria, format = exact, max = null,
+}) => {
   const W = widthOf(mount);
   const L = 46;
   const R = 12;
@@ -352,7 +354,7 @@ export const stackedArea = ({ mount, years, series, aria, format = exact }) => {
   const rows = years.map((year, i) => Object.fromEntries([['year', year], ...series.map((s) => [s.key, s.values[i]])]));
   const layers = stack(rows, series.map((s) => s.key));
   const totals = rows.map((r) => series.reduce((n, s) => n + r[s.key], 0));
-  const ticks = niceTicks(Math.max(...totals), 4);
+  const ticks = niceTicks(max ?? Math.max(...totals), 4);
   const x = scaleLinear([years[0], years.at(-1)], [L, W - R]);
   const y = scaleLinear([0, ticks.at(-1)], [H - B, T]);
   const area = (points) => {
