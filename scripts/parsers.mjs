@@ -22,8 +22,8 @@ export const parseBlsText = (html) => {
     const head = lines.findIndex((l) => HEADER.test(l));
     if (head < 0) continue;
     const meta = lines.slice(1, head).map((l) => l.match(/^([A-Za-z/ ]+):\s+(.+)$/)).filter(Boolean);
-    const title = meta.find((m) => /^Series title$/i.test(m[1]))?.[2]
-      ?? meta.filter((m) => /^(Data Element|Rate\/Level)$/.test(m[1])).map((m) => m[2]).join(', ');
+    const element = meta.filter((m) => /^(Data Element|Rate\/Level)$/.test(m[1])).map((m) => m[2]).join(', ');
+    const title = meta.find((m) => /^Series title$/i.test(m[1]))?.[2] || element || meta.map((m) => m[2]).join(', ');
     const cols = lines[head].toLowerCase().replace('estimate', 'value').split(',');
     const rows = [];
     for (const line of lines.slice(head + 1)) {
@@ -247,17 +247,6 @@ export const parseIncomeShares = (rows) => {
     seen.set(year, { year, shares: r.slice(2, 7).map(num), top5: num(r[7]) });
   }
   return [...seen.values()].sort((a, b) => a.year - b.year);
-};
-
-export const parseMsha = (html) => {
-  const out = [];
-  for (const [, row] of html.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)) {
-    const cells = [...row.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map((m) => decode(m[1].replace(/<[^>]+>/g, '')).trim());
-    for (let i = 0; i + 2 < cells.length; i += 3) {
-      if (/^\d{4}$/.test(cells[i])) out.push({ year: Number(cells[i]), miners: num(cells[i + 1]), deaths: num(cells[i + 2]) });
-    }
-  }
-  return out.sort((a, b) => a.year - b.year);
 };
 
 export const lobbyingDollars = (filings) => {
