@@ -55,9 +55,9 @@
     <h2 class="readme-title" id="readme-title">How to read these numbers</h2>
     <ul>
       <li><b>Rebuilt weekly.</b> BLS, BEA, Census, Federal Reserve and lobbying figures are pulled from the agencies’ own files every Sunday. Tap a mark for its numbers.</li>
-      <li><b>Classical terms.</b> Surplus value is net value added less compensation of employees, for nonfinancial corporations. Each term’s definition and source line is in the table at the end.</li>
+      <li><b>Classical terms.</b> Variable capital is the pay of production and nonsupervisory workers outside trade, finance and real estate. Surplus value is the rest of net value added, for nonfinancial corporations, and includes the pay of supervisors, managers, officers and trade staff. Each term’s definition and source line is in the table at the end.</li>
       <li><b>Annual values.</b> Yearly figures are BLS annual averages and BEA annual totals. Where a single month is shown, it says so.</li>
-      <li><b>Latest-year dollars.</b> Where a chart says so, dollars from earlier years are restated in the latest full year’s prices with the CPI-U.</li>
+      <li><b>Latest-year dollars.</b> Where a chart says so, dollars from earlier years are restated in the latest full year’s prices with the CPI-W, the price index for urban wage earners and clerical workers.</li>
       <li><b>Fixed tables.</b> Tables marked Historical Statistics are typed from the 1975 Census volume, with its series numbers. They do not change.</li>
       <li><b>Breaks in series.</b> Old and new series measure different things. They are drawn as separate lines and never joined.</li>
       <li><b>Named groups only.</b> Lobbying totals cover the organizations listed, reporting their own lobbying. Firms they hire are not counted.</li>
@@ -92,25 +92,25 @@
     <header class="head"><p class="label">The divided week</p><h2 data-finding="division">The divided week</h2><p class="dek" id="division-dek"></p></header>
     <figure class="fig">
       <div class="chart" id="division-chart"></div>
-      <figcaption>The average manufacturing week split in the ratio of compensation to surplus value in nonfinancial corporations that year. Hours: Historical Statistics D 803 to 1938, BLS CEU3000000007 after. Ratio: BEA NIPA Table 1.14.</figcaption>
+      <figcaption>The average manufacturing week split in the ratio of variable capital to surplus value in nonfinancial corporations that year. Hours: BLS CEU3000000007. Ratio: BEA NIPA Tables 1.14 and 6.3D and BLS aggregate weekly payrolls.</figcaption>
     </figure>
   </section>
 
   <div class="chapter wrap" id="ch-surplus" data-chapter="surplus">
     <p class="chapter-no">Part 2</p>
     <h2 class="chapter-title">Surplus value</h2>
-    <p class="chapter-dek">Net value added split into wages and surplus, by year and by industry.</p>
+    <p class="chapter-dek">Net value added split into variable capital and surplus value, by year and by industry.</p>
   </div>
 
   <section class="story wrap" id="surplus" data-lens="capital" data-nav="Surplus">
     <header class="head"><p class="label">Rate of surplus value</p><h2 data-finding="surplus">Rate of surplus value</h2><p class="dek" id="surplus-dek"></p></header>
     <figure class="fig">
       <div class="chart" id="rate-chart"></div>
-      <figcaption>Surplus value per dollar of compensation of employees, nonfinancial corporate business. Surplus value is net value added (line 19) less compensation (line 20). Source: BEA NIPA Table 1.14.</figcaption>
+      <figcaption>Surplus value per dollar of variable capital, nonfinancial corporate business. Variable capital is compensation (line 20) times the share of private wages outside finance and real estate that goes to production and nonsupervisory workers outside trade and finance. Before 1998, wages outside finance and real estate are private wages less financial corporate wages, scaled to their 1998 ratio. Surplus value is net value added (line 19) less variable capital. Sources: BEA NIPA Tables 1.14, 2.1 and 6.3D; BLS CEU0500000082 less CEU4142000082, CEU4200000082 and CEU5500000082.</figcaption>
     </figure>
     <figure class="fig">
       <div class="chart" id="parts-chart"></div>
-      <figcaption>Where surplus value goes, percent of the total each year: taxes on production, net interest, business transfers, taxes on corporate income, dividends and undistributed profits. Source: BEA NIPA Table 1.14, lines 23 to 31.</figcaption>
+      <figcaption>Where surplus value goes, percent of the total each year. Source: BEA NIPA Table 1.14, lines 20 to 31.</figcaption>
     </figure>
   </section>
 
@@ -126,7 +126,7 @@
     <header class="head"><p class="label">Output and pay</p><h2 data-finding="productivity">Output and pay</h2><p class="dek" id="productivity-dek"></p></header>
     <figure class="fig">
       <div class="chart" id="productivity-chart"></div>
-      <figcaption>Nonfarm business sector, indexes with the first year set to 100: output per hour worked, real hourly compensation, and the labor share of output. Source: BLS Productivity and Costs (PRS85006093, PRS85006153, PRS85006173).</figcaption>
+      <figcaption>Indexes with the first year set to 100: output per hour worked in the nonfarm business sector; real hourly compensation of all its employees, officers included; and real average hourly earnings of private production and nonsupervisory workers, deflated with the CPI-W. Sources: BLS PRS85006093, PRS85006153, CEU0500000008, CWUR0000SA0.</figcaption>
     </figure>
   </section>
 
@@ -187,14 +187,14 @@
   <div class="chapter wrap" id="ch-accumulation" data-chapter="accumulation">
     <p class="chapter-no">Part 4</p>
     <h2 class="chapter-title">Accumulation</h2>
-    <p class="chapter-dek">Fixed capital set against wages, the rate of profit, and the size of firms.</p>
+    <p class="chapter-dek">Constant capital set against variable capital, the rate of profit, and the size of firms.</p>
   </div>
 
   <section class="story wrap" id="composition" data-lens="capital" data-nav="Composition">
     <header class="head"><p class="label">Composition of capital</p><h2 data-finding="composition">Composition of capital</h2><p class="dek" id="composition-dek"></p></header>
     <figure class="fig">
       <div class="chart" id="composition-chart"></div>
-      <figcaption>Current-cost net stock of fixed assets of nonfinancial corporations at the end of the prior year, per dollar of that year’s compensation of employees. Sources: BEA Fixed Assets Table 6.1, line 4; NIPA Table 1.14, line 20.</figcaption>
+      <figcaption>Constant capital of nonfinancial corporations, the current-cost net stock of fixed assets plus inventories at the end of the prior year, per dollar of that year’s variable capital. Sources: BEA Fixed Assets Table 6.1, line 4; Federal Reserve Financial Accounts, LM105020015; BEA NIPA Table 1.14.</figcaption>
     </figure>
   </section>
 
@@ -202,7 +202,7 @@
     <header class="head"><p class="label">Rate of profit</p><h2 data-finding="profit">Rate of profit</h2><p class="dek" id="profit-dek"></p></header>
     <figure class="fig">
       <div class="chart" id="profit-chart"></div>
-      <figcaption>Surplus value of nonfinancial corporations as a percent of their net stock of fixed assets at the end of the prior year, current cost. Sources: BEA NIPA Table 1.14; Fixed Assets Table 6.1.</figcaption>
+      <figcaption>Surplus value of nonfinancial corporations as a percent of constant capital: fixed assets and inventories at current cost, at the end of the prior year. Sources: BEA NIPA Table 1.14; Fixed Assets Table 6.1; Federal Reserve Financial Accounts.</figcaption>
     </figure>
     <h3 class="subhead" data-finding="finance">Finance</h3>
     <figure class="fig narrow">
@@ -301,7 +301,7 @@
     <header class="head"><p class="label">National income</p><h2 data-finding="income">National income</h2><p class="dek" id="income-dek"></p></header>
     <figure class="fig">
       <div class="chart" id="ni-chart"></div>
-      <figcaption>National income by type, percent of the total each year. Other covers business transfer payments and the surplus of government enterprises. Source: BEA NIPA Table 1.12.</figcaption>
+      <figcaption>National income by type, percent of the total each year. Other covers business transfer payments and the surplus of government enterprises. Production workers’ pay, from 1964, is the weekly payroll of private production and nonsupervisory workers, annualized and raised by the ratio of compensation to wages; it is part of compensation. Sources: BEA NIPA Table 1.12; BLS CEU0500000082.</figcaption>
     </figure>
   </section>
 
