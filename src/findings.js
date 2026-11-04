@@ -1,9 +1,10 @@
 import { exact, pct, usd, wordy, cents } from './lib.js';
 import {
   series, accounts, workday, minWageYear, minutes, industrySurplus, classShares, reserveLayers, nationalIncome, federalReceipts, peak, deflate,
+  perThousand,
 } from './calc.js';
 import {
-  HIST, COAL, MIN_WAGE, TIMELINE, INDUSTRY_LABELS,
+  HIST, COAL, MIN_WAGE, TIMELINE, INDUSTRY_LABELS, SOURCES,
 } from './facts.js';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -246,3 +247,62 @@ export const findings = (snap) => ({
   lobbying: lobbying(snap),
   history: history(),
 });
+
+const byRow = (rows, i, dir = 'max') => rows.reduce((a, b) => {
+  if (b[i] === null) return a;
+  return (dir === 'max' ? b[i] > a[i] : b[i] < a[i]) ? b : a;
+});
+
+export const records = (snap) => {
+  const out = [];
+  const add = (text, src) => out.push({ text, href: SOURCES[src] });
+  const idle = byRow(HIST.stoppages.rows, 3);
+  add(`${idle[0]}: ${exact(idle[3] * 1000)} days idle in work stoppages, the most of any year from 1927 to 1970.`, 'hsus');
+  const ws = [...series(snap, 'WSU100')].map(([y, v]) => ({ y, v }));
+  const wsHi = peak(ws, 'v');
+  const wsLo = peak(ws, 'v', 'min');
+  add(`Major work stoppages: ${exact(wsHi.v)} in ${wsHi.y}, ${exact(wsLo.v)} in ${wsLo.y}. BLS has counted them since ${ws[0].y}.`, 'blsWs');
+  const coal = byRow(COAL, 2);
+  add(`${coal[0]}: ${exact(coal[2])} coal miners killed, ${perThousand(coal[2], coal[1]).toFixed(1)} per 1,000 employed.`, 'msha');
+  const zero = COAL.reduce((a, b) => (b[2] < a[2] ? b : a));
+  add(`Fewest coal mining deaths since 1900: ${exact(zero[2])}, in ${zero[0]}.`, 'msha');
+  const unemp = [...HIST.unemployment.rows.map((r) => ({ y: r[0], v: r[2] })), ...[...series(snap, 'LNU04000000')].filter(([y]) => y > 1947).map(([y, v]) => ({ y, v }))];
+  const uLo = peak(unemp, 'v', 'min');
+  add(`Lowest annual unemployment rate since 1890: ${uLo.v}%, in ${uLo.y}.`, 'hsus');
+  const weeks = [...series(snap, 'LNU03008275')].map(([y, v]) => ({ y, v }));
+  const wHi = peak(weeks, 'v');
+  add(`Longest average spell of unemployment since 1948: ${wHi.v} weeks, in ${wHi.y}.`, 'blsCps');
+  const mins = realMinimum(snap);
+  const mLo = peak(mins.filter((r) => r.year >= 1950), 'real', 'min');
+  add(`Lowest federal minimum wage since 1950 in ${mins.at(-1).year} dollars: ${cents(mLo.real)}, in ${mLo.year}.`, 'minWage');
+  const acc = accounts(snap);
+  const rLo = peak(acc, 'rate', 'min');
+  const rHi = peak(acc, 'rate');
+  add(`Rate of surplus value, nonfinancial corporations: ${Math.round(rHi.rate * 100)} cents per dollar of wages in ${rHi.year}, ${Math.round(rLo.rate * 100)} in ${rLo.year}.`, 'beaFlat');
+  const short = [...HIST.hoursBls.rows.map((r) => ({ y: r[0], v: r[1] })), ...[...series(snap, 'CEU3000000007')].map(([y, v]) => ({ y, v }))];
+  const sLo = peak(short, 'v', 'min');
+  add(`Shortest average manufacturing week since 1909: ${sLo.v} hours, in ${sLo.y}.`, 'hsus');
+  const members = byRow(HIST.unions.rows, 1);
+  add(`Most union members in Historical Statistics: ${exact(members[1] * 1000)}, in ${members[0]}.`, 'hsus');
+  const slave = HIST.laborForce.rows.filter((r) => r[3] !== null).map((r) => ({ y: r[0], v: r[3] / r[1] }));
+  const sHi = peak(slave, 'v');
+  add(`${sHi.y}: ${pct(sHi.v)} of the labor force was enslaved, the largest share in the 1800 to 1860 census years.`, 'hsus');
+  const q4 = snap.wealth.quarters.map((q) => ({ y: q.date, v: q['Net worth'].Bottom50 }));
+  const bLo = peak(q4, 'v', 'min');
+  add(`Lowest share of net worth held by the bottom half of households: ${pct(bLo.v)}, in ${bLo.y}.`, 'dfa');
+  const eggs = series(snap, 'APU0000708111');
+  const ahe = series(snap, 'CEU0500000008');
+  const egg = [...eggs].filter(([y]) => ahe.has(y)).map(([y, v]) => ({ y, v: minutes(v, ahe.get(y)) }));
+  const eHi = peak(egg, 'v');
+  add(`Most minutes of work for a dozen eggs since ${egg[0].y}: ${eHi.v.toFixed(1)}, in ${eHi.y}.`, 'blsAp');
+  const l = snap.lobbying;
+  const top = l.orgs.reduce((a, b) => (b.dollars > a.dollars ? b : a));
+  const union = l.orgs.filter((o) => o.side === 'labor').reduce((a, b) => (b.dollars > a.dollars ? b : a));
+  add(`${l.year} lobbying: ${top.name}, ${usd(top.dollars)}. ${union.name}, ${usd(union.dollars)}.`, 'lda');
+  const firms = snap.firms.years;
+  add(`Share of private-sector workers in firms of 10,000 or more: ${pct(firms[0].topEmp / firms[0].emp)} in ${firms[0].year}, ${pct(firms.at(-1).topEmp / firms.at(-1).emp)} in ${firms.at(-1).year}.`, 'bds');
+  const corp = federalReceipts(snap).map((r) => ({ y: r.year, v: r.parts.find((p) => p.key === 'corporate').share }));
+  const cHi = peak(corp, 'v');
+  add(`Largest share of federal receipts from corporate income taxes: ${pct(cHi.v)}, in ${cHi.y}.`, 'beaFlat');
+  return out;
+};
