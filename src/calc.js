@@ -217,3 +217,11 @@ export const worldShares = (snap, indicator) => {
   return Object.fromEntries(Object.entries(data).filter(([c]) => c !== 'WLD')
     .map(([c, rows]) => [c, rows.filter(([y]) => world.get(y)).map(([y, v]) => [y, (v / world.get(y)) * 100])]));
 };
+
+export const lawsInForce = (rows, year) => rows.filter(([from, , to]) => from <= year && (to === null || to > year)).length;
+
+export const perResidents = (snap, rows, per = 1e4) => {
+  const pop = series(snap, 'B230RC');
+  return rows.filter(([year]) => pop.get(year))
+    .map(([year, ...counts]) => ({ year, counts, rates: counts.map((c) => (c / (pop.get(year) * 1000)) * per) }));
+};

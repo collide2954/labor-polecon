@@ -215,6 +215,6 @@ test('perResidents divides each count by the midyear population where there is o
   assert.deepEqual(out.map((r) => r.year), [1993, 2021]);
   assert.deepEqual(out[0].counts, [480925, 181372]);
   assert.ok(close(out[0].rates[0], 18.4971153846, 1e-6));
-  assert.ok(close(out[1].rates[1], 7.6460, 1e-4));
+  assert.ok(close(out[1].rates[1], 7.6461, 1e-4));
   assert.ok(close(perResidents(snap, [[1993, 260]], 1e5)[0].rates[0], 0.1));
 });

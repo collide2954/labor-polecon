@@ -368,6 +368,14 @@ export const niceTicks = (max, count) => {
 
 export const yearOf = (date) => Number(String(date).slice(0, 4));
 
+const SMALL_WORDS = new Set(['and', 'of', 'the']);
+
+export const placeName = (name) => {
+  const [head, tail] = name.split(', ');
+  return (tail ? `${tail} ${head}` : name).toLowerCase()
+    .replace(/[a-z]+/g, (w, at) => (at > 0 && SMALL_WORDS.has(w) ? w : w[0].toUpperCase() + w.slice(1)));
+};
+
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export const longDate = (text) => {
