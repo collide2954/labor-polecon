@@ -1,11 +1,11 @@
 import { writeFile } from 'node:fs/promises';
 import { retry } from '../src/lib.js';
 import {
-  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, WORLD, CENSUS, LOBBY, DFA_MEASURES,
+  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, WORLD, CENSUS, PRISONERS, LOBBY, DFA_MEASURES,
 } from '../src/queries.js';
 import {
   parseBlsText, annual, latest, parseBeaFlat, parseRegister, readXlsx, parseValueAdded, parseBds, parseDfa,
-  parseIncomeShares, parseZ1, parseWorldBank, parsePovertyByRace, parseHomeownership, parseAgeSex,
+  parseIncomeShares, parseZ1, parseWorldBank, parsePovertyByRace, parseHomeownership, parseAgeSex, parsePrisoners,
   lobbyingDollars, toModule,
 } from './parsers.mjs';
 
@@ -109,6 +109,13 @@ const ages = async () => {
   return out;
 };
 
+const prisons = async () => {
+  step('bjs national prisoner statistics');
+  const years = parsePrisoners(await get(PRISONERS, 'json'));
+  if (years.length < 40 || years[0][0] !== 1978) throw new Error('BJS prisoner data changed shape');
+  return { years };
+};
+
 const industries = async () => {
   step('bea value added by industry');
   const book = readXlsx(await get(`${BEA}/industry/Release/XLS/GDPxInd/ValueAdded.xlsx`, 'buffer'));
@@ -183,6 +190,7 @@ const SECTIONS = {
   poverty: () => poverty(),
   homes: () => homes(),
   ages: () => ages(),
+  prisons: () => prisons(),
   industries: () => industries(),
   firms: () => firms(),
   income: () => income(),

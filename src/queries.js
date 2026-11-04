@@ -176,6 +176,7 @@ export const NIPA = {
   B3475C: n('T40100:12', 'Reinvested earnings on U.S. direct investment abroad'),
   W161RC: n('T40100:25', 'Income payments on assets to the rest of the world'),
   A065RC: n('T20100:1', 'Personal income'),
+  B230RC: n('T20100:40', 'Population, midperiod, thousands'),
   A445RC: n('T61600D:2', 'Corporate profits, domestic industries'),
   A587RC: n('T61600D:3', 'Corporate profits, financial'),
 };
@@ -228,6 +229,8 @@ export const CENSUS = {
   homes: 'https://www.census.gov/housing/hvs/data/histtab16.xlsx',
   popest: 'https://www2.census.gov/programs-surveys/popest/datasets/',
 };
+
+export const PRISONERS = 'https://csat.bjs.ojp.gov/csatapi/csatapi/data?table=GeoSummariesView';
 
 export const PRODUCTIVE = { total: 'CEU0500000082', less: ['CEU4142000082', 'CEU4200000082', 'CEU5500000082'] };
 
