@@ -21,6 +21,8 @@ const fixture = {
     CEU5500000082: weekly([[1972, 10], [2025, 100]]),
     CEU1021000082: weekly([[2025, 5]]),
     CEU2000000082: weekly([[2025, 8]]),
+    LNU01073395: ann([[2025, 191]]),
+    LNU01073413: ann([[2025, 809]]),
     LEU0252911200: ann([[2025, 619]]),
     LEU0252911500: ann([[2025, 2905]]),
     APU0000708111: ann([[1980, 0.844], [2025, 4.252]]),
@@ -56,10 +58,17 @@ const fixture = {
     A032RC: yrs([[2025, 4000]]),
     A033RC: yrs([[2025, 2432]]),
     A034RC: yrs([[2025, 2000]]),
-    A051RC: yrs([[2025, 624]]),
+    A051RC: yrs([[1948, 100], [2025, 624]]),
+    A064RC: yrs([[2025, 400]]),
+    B703RC: yrs([[2025, 300]]),
+    A048RC: yrs([[2025, 164]]),
+    A065RC: yrs([[2025, 4000]]),
+    A191RC: yrs([[1959, 1000], [2025, 1000]]),
+    G16008: yrs([[1959, 8], [2025, 18]]),
+    B230RC: yrs([[1978, 222585], [2008, 304718], [2021, 332048]]),
     W005RC: yrs([[1929, 100], [2025, 1000]]),
     B075RC: yrs([[1929, 33], [2025, 78]]),
-    A445RC: yrs([[2025, 400]]),
+    A445RC: yrs([[1948, 96], [2025, 400]]),
     A587RC: yrs([[2025, 100]]),
   },
   fixed: { k1pnofi2es00: yrs([[1971, 300], [2024, 3500]]), m1n21001es00: yrs([[2025, 10]]), m1n23001es00: yrs([[2025, 1]]) },
@@ -73,6 +82,9 @@ const fixture = {
       { label: 'Federal', depth: 1, comp: [10, 10], taxes: [0, 0], gos: [1, 1] },
     ],
   },
+  world: { 'NY.GDP.MKTP.CD': { USA: [[1960, 40], [2025, 26]], CHN: [[1960, 4], [2025, 17]], WLD: [[1960, 100], [2025, 100]] } },
+  poverty: { 'Black Alone': [[2025, 17.3]], 'Hispanic (any race)': [[2025, 13.9]], 'White Alone, Not Hispanic': [[2025, 7.5]], 'All Races': [[2025, 10.2]] },
+  prisons: { years: [[1978, 294396], [2008, 1547742], [2021, 1163665]] },
   firms: { release: 2023, years: [{ year: 2023, firms: 100, emp: 1000, topFirms: 3, topEmp: 299 }], top: '10000+' },
   income: [{ year: 2025, shares: [3, 8.2, 13.9, 22.5, 52.4], top5: 23.5 }],
   wealth: {
@@ -120,13 +132,24 @@ test('findings state each section as a number', () => {
   assert.equal(f.issues, '1881 to 1905: 53.8% of stoppages were over wages and hours');
   assert.equal(f.injury, 'Coal mining deaths: 3,242 in 1907, 8 in 2025');
   assert.equal(f.fatal, '5,070 fatal work injuries in 2024');
+  assert.equal(f.export, 'Corporate profits from the rest of the world: 4% of all corporate profits in 1948, 35.9% in 2025');
+  assert.equal(f.world, 'U.S. share of world GDP: 40% in 1960, 26% in 2025. China: 4% to 17%');
+  assert.equal(f.rentier, 'Interest, dividends and rent: 21.6% of personal income in 2025; wages and salaries: 50%');
+  assert.equal(f.population, 'Census count: 3,929,214 in 1790, 331,449,281 in 2020');
+  assert.equal(f.nativity, 'Foreign born: 14.8% of the population in 1890; 19.1% of the civilian labor force in 2025');
+  assert.equal(f.poverty, 'Below the poverty line in 2025: 17.3% of Black people, 13.9% of Hispanic people, 7.5% of non-Hispanic white people');
+  assert.equal(f.regions, 'The South: 31.9% of the population in 1910, 38.1% in 2020');
+  assert.equal(f.force, 'Public order and safety: 0.8% of GDP in 1959, 1.8% in 2025');
+  assert.equal(f.prisons, 'Sentenced prisoners per 100,000 residents: 79 in 1925, 508 in 2008, 350 in 2021');
+  assert.equal(f.removals, 'Noncitizens removed: 2,801 in 1892, 432,334 in 2013, 108,733 in 2022');
+  assert.equal(f.deployments, 'Uses of U.S. armed forces abroad in the CRS list: 1 in the 1790s, 103 in the 2010s');
   assert.equal(f.lobbying, 'Business groups here reported $100M in lobbying in 2025; the unions here, $5M');
   assert.match(f.history, /^\d+ events, 1798 to \d{4}$/);
 });
 
 test('real snapshot gives every finding as text without filler words', () => {
   const f = findings(snapshot);
-  assert.ok(Object.keys(f).length >= 30);
+  assert.ok(Object.keys(f).length >= 41);
   for (const [key, text] of Object.entries(f)) {
     assert.equal(typeof text, 'string', key);
     assert.ok(text.length > 10 && text.length < 130, `${key}: ${text}`);
