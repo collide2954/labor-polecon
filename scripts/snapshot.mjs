@@ -1,11 +1,12 @@
 import { writeFile } from 'node:fs/promises';
 import { retry } from '../src/lib.js';
 import {
-  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, WORLD, CENSUS, PRISONERS, LOBBY, DFA_MEASURES,
+  BLS_SERIES, BLS_BATCHES, blsBatches, NIPA, FIXED, Z1, TROOPS, WORLD, CENSUS, PRISONERS, LOBBY, DFA_MEASURES,
 } from '../src/queries.js';
 import {
   parseBlsText, annual, latest, parseBeaFlat, parseRegister, readXlsx, parseValueAdded, parseBds, parseDfa,
   parseIncomeShares, parseZ1, parseWorldBank, parsePovertyByRace, parseHomeownership, parseAgeSex, parsePrisoners,
+  latestLocationReport, parseLocationReport,
   lobbyingDollars, toModule,
 } from './parsers.mjs';
 
@@ -67,11 +68,25 @@ const fixed = () => beaSeries('/national/FixedAssets', Object.keys(FIXED));
 
 const z1 = async () => {
   step('fed z.1');
-  const data = parseZ1(await get(Z1.url, 'buffer'), Z1.file, Z1.codes);
-  return Object.fromEntries(Z1.codes.map((code) => {
-    if (!data[code]) throw new Error(`Z.1 returned no data for ${code}`);
-    return [code.replace(/\.A$/, ''), { years: data[code] }];
-  }));
+  const buffer = await get(Z1.url, 'buffer');
+  const out = {};
+  for (const [file, codes] of Object.entries(Z1.files)) {
+    const data = parseZ1(buffer, file, codes);
+    for (const code of codes) {
+      if (!data[code]) throw new Error(`Z.1 returned no data for ${code}`);
+      out[code.replace(/\.A$/, '')] = { years: data[code] };
+    }
+  }
+  return out;
+};
+
+const troops = async () => {
+  step('dmdc troops by location');
+  const pick = latestLocationReport(await get(TROOPS.page, 'json'));
+  const book = readXlsx(await get(TROOPS.file(pick.fileId, pick.groupName), 'buffer'));
+  const out = parseLocationReport(Object.values(book)[0]);
+  if (!out.overseas || out.countries.length < 20) throw new Error('DMDC location report changed shape');
+  return { report: pick.name, ...out };
 };
 
 const world = async () => {
@@ -191,6 +206,7 @@ const SECTIONS = {
   homes: () => homes(),
   ages: () => ages(),
   prisons: () => prisons(),
+  troops: () => troops(),
   industries: () => industries(),
   firms: () => firms(),
   income: () => income(),
