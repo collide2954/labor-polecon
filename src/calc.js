@@ -194,3 +194,26 @@ export const peak = (rows, key, dir = 'max') => rows.reduce((a, b) => {
 });
 
 export const ratioSeries = (a, b) => [...a.keys()].filter((k) => b.has(k) && b.get(k)).map((k) => [k, a.get(k) / b.get(k)]);
+
+export const percentOf = (snap, parts, totalId) => {
+  const total = series(snap, totalId);
+  return [...total.keys()].sort((a, b) => a - b)
+    .map((year) => [year, sumOf(snap, parts, year)])
+    .filter(([year, v]) => v !== null && total.get(year))
+    .map(([year, v]) => [year, (v / total.get(year)) * 100]);
+};
+
+export const prisonRates = (snap, early) => {
+  const pop = series(snap, 'B230RC');
+  const later = (snap.prisons?.years ?? []).filter(([year]) => pop.get(year))
+    .map(([year, prisoners]) => ({ year, prisoners, rate: (prisoners / (pop.get(year) * 1000)) * 1e5 }));
+  const first = later[0]?.year ?? Infinity;
+  return [...early.filter(([year]) => year < first).map(([year, prisoners, rate]) => ({ year, prisoners, rate })), ...later];
+};
+
+export const worldShares = (snap, indicator) => {
+  const data = snap.world?.[indicator] ?? {};
+  const world = new Map(data.WLD ?? []);
+  return Object.fromEntries(Object.entries(data).filter(([c]) => c !== 'WLD')
+    .map(([c, rows]) => [c, rows.filter(([y]) => world.get(y)).map(([y, v]) => [y, (v / world.get(y)) * 100])]));
+};
