@@ -318,3 +318,14 @@ export const identify = (input) => {
   }
   return null;
 };
+
+export const retry = async (fn, { tries = 3, wait = 1000 } = {}) => {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt >= tries) throw error;
+      await new Promise((r) => setTimeout(r, wait * 2 ** (attempt - 1)));
+    }
+  }
+};
