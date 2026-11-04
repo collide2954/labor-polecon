@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   accounts, workday, deflate, minWageYear, minutes, industrySurplus, classShares, reserveLayers, perThousand, shares,
-  nationalIncome, federalReceipts, peak, series, cpiIn, ratioSeries,
+  nationalIncome, federalReceipts, peak, series, cpiIn, ratioSeries, productiveShare, industryRate, WEEK,
 } from '../../src/calc.js';
 
 const close = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
@@ -35,10 +35,25 @@ const SNAP = {
     W780RC: nipa([[2025, 150]]),
     B075RC: nipa([[2025, 50]]),
     W007RC: nipa([[2025, 25]]),
+    A034RC: nipa([[2025, 1000]]),
+    A4103C: nipa([[2025, 120]]),
+    N4159C: nipa([[2025, 10]]),
+    N4164C: nipa([[2025, 5]]),
+    A132RC: nipa([[2024, 110], [2025, 118]]),
+    A443RC: nipa([[2024, 520], [2025, 601]]),
+    N4107C: nipa([[2025, 15]]),
   },
-  fixed: { k1pnofi2es00: { years: [[2023, 2000], [2024, 2400], [2025, 2500]] } },
+  fixed: { k1pnofi2es00: { years: [[2023, 2000], [2024, 2400], [2025, 2500]] }, m1n21001es00: { years: [[2025, 4]] } },
+  z1: { LM105020015: { years: [[2023, 400], [2024, 500]] } },
+  industries: { years: [2024, 2025], rows: [{ label: 'Mining', depth: 1, comp: [10, 20], taxes: [1, 2], gos: [9, 18] }] },
   bls: {
     CUUR0000SA0: { annual: [[1968, 34.8], [2025, 321.943]] },
+    CWUR0000SA0: { annual: [[1968, 35], [2025, 315.285]] },
+    CEU0500000082: { annual: [[2024, 1400], [2025, 1610]] },
+    CEU4142000082: { annual: [[2024, 100], [2025, 100]] },
+    CEU4200000082: { annual: [[2024, 150], [2025, 150]] },
+    CEU5500000082: { annual: [[2024, 50], [2025, 60]] },
+    CEU1021000082: { annual: [[2025, 140]] },
     LNU02000000: { annual: [[2025, 1000]] },
     LNU02032184: { annual: [[2025, 10]] },
     LNU02032187: { annual: [[2025, 890]] },
@@ -57,21 +72,47 @@ test('series reads BLS and BEA pairs into maps', () => {
   assert.equal(series(SNAP, 'A460RC').get(2025), 700);
   assert.equal(series(SNAP, 'k1pnofi2es00').get(2023), 2000);
   assert.equal(series(SNAP, 'CUUR0000SA0').get(1968), 34.8);
+  assert.equal(series(SNAP, 'LM105020015').get(2024), 500);
   assert.equal(series(SNAP, 'NOPE').size, 0);
 });
 
-test('accounts splits net value added into wages and surplus and divides by capital', () => {
+test('productiveShare divides productive payroll by private wages outside finance and real estate', () => {
+  const share = productiveShare(SNAP);
+  const scale = 105 / 97;
+  assert.ok(close(WEEK, 365.25 / 7));
+  assert.ok(close(share.get(2025), ((1300 * WEEK) / 1000) / 105));
+  assert.ok(close(share.get(2024), ((1100 * WEEK) / 1000) / (90 * scale)));
+});
+
+test('accounts count only productive pay as variable capital and divide by fixed capital and inventories', () => {
   const [a, b] = accounts(SNAP);
+  const r24 = productiveShare(SNAP).get(2024);
   assert.equal(a.year, 2024);
-  assert.equal(a.s, 400);
-  assert.ok(close(a.rate, 400 / 600));
-  assert.equal(a.C, 2000);
-  assert.ok(close(a.composition, 2000 / 600));
-  assert.ok(close(a.profit, 400 / 2000));
-  assert.equal(b.s, 500);
-  assert.equal(b.C, 2400);
-  assert.deepEqual(b.parts, { taxesProd: 60, interest: 50, transfers: 10, profitTax: 70, dividends: 160, retained: 150 });
-  assert.equal(Object.values(b.parts).reduce((x, y) => x + y, 0), b.s);
+  assert.equal(a.comp, 600);
+  assert.ok(close(a.v, 600 * r24));
+  assert.ok(close(a.s, 1000 - 600 * r24));
+  assert.ok(close(a.rate, a.s / a.v));
+  assert.equal(a.fixed, 2000);
+  assert.equal(a.stock, 400);
+  assert.equal(a.C, 2400);
+  assert.ok(close(a.composition, 2400 / a.v));
+  assert.ok(close(a.profit, a.s / 2400));
+  assert.equal(b.C, 2900);
+  assert.deepEqual(Object.keys(b.parts), ['otherPay', 'taxesProd', 'interest', 'transfers', 'profitTax', 'dividends', 'retained']);
+  assert.ok(close(b.parts.otherPay, 700 - b.v));
+  assert.ok(close(Object.values(b.parts).reduce((x, y) => x + y, 0), b.s));
+});
+
+test('industryRate takes depreciation out and counts productive pay as variable capital', () => {
+  const row = SNAP.industries.rows[0];
+  const v = 20 * (((140 * WEEK) / 1000) / 15);
+  const r = industryRate(SNAP, row, 2025);
+  assert.ok(close(r.v, v));
+  assert.equal(r.depreciation, 4);
+  assert.ok(close(r.s, 20 + 2 + 18 - 4 - v));
+  assert.ok(close(r.rate, r.s / r.v));
+  assert.equal(industryRate(SNAP, row, 2024), null);
+  assert.equal(industryRate(SNAP, { ...row, label: 'Retail trade' }, 2025), null);
 });
 
 test('workday divides the hours in the ratio of wages to surplus', () => {
@@ -81,9 +122,9 @@ test('workday divides the hours in the ratio of wages to surplus', () => {
   assert.ok(close(d.surplus / d.necessary, 0.5));
 });
 
-test('deflate and cpiIn restate dollars in another year’s prices', () => {
+test('deflate and cpiIn restate wages in another year’s prices for wage earners', () => {
   assert.ok(close(deflate(1.6, 34.8, 321.943), 1.6 * (321.943 / 34.8)));
-  assert.ok(close(cpiIn(SNAP, 1968, 1.6), 1.6 * (321.943 / 34.8)));
+  assert.ok(close(cpiIn(SNAP, 1968, 1.6), 1.6 * (315.285 / 35)));
 });
 
 const STEPS = [
@@ -136,6 +177,7 @@ test('nationalIncome and federalReceipts give each part and the remainder as sha
   assert.ok(close(ni.parts.reduce((n, p) => n + p.share, 0), 1));
   assert.ok(close(ni.parts.find((p) => p.key === 'comp').share, 0.6));
   assert.ok(close(ni.parts.find((p) => p.key === 'other').share, 0.025));
+  assert.ok(close(ni.workers, ((1610 * WEEK) / 1000) * 1.2 / 2000));
   const [fr] = federalReceipts(SNAP);
   assert.ok(close(fr.parts.find((p) => p.key === 'personal').share, 0.5));
   assert.ok(close(fr.parts.find((p) => p.key === 'other').share, 0.05));
